@@ -1,0 +1,171 @@
+####################宏观风格
+#基础样式
+#BasedOnStyle: Google
+Standard: c++20
+#指针的*的挨着哪边
+PointerAlignment: Right
+# 缩进宽度
+IndentWidth: 4
+# tab键盘的宽度
+TabWidth: 4
+# 大括号的换行方式
+BreakBeforeBraces: Allman
+# 每行字符的长度
+ColumnLimit: 120
+# 换行的时候对齐操作数
+AlignOperands: Align
+# 在续行(#     下一行)时的缩进长度
+ContinuationIndentWidth: 8
+# 连续的空行保留几行
+MaxEmptyLinesToKeep: 2
+# 总是在定义块间加空行，如类、结构体、枚举、函数的定义之间。注意，仅定义，对声明没有效果
+#SeparateDefinitionBlocks: Always
+
+# -----------空格设置------------
+# 赋值运算符前加空格
+SpaceBeforeAssignmentOperators: true
+# 括号后加空格
+SpaceAfterCStyleCast: true
+# 中括号两边空格 []
+SpacesInSquareBrackets: true
+# 尖括号加空格
+SpacesInAngles: Always
+# {}初始化前加空格
+SpaceBeforeCpp11BracedList: true
+# 圆括号前的空格设置
+SpaceBeforeParens: Custom
+SpaceBeforeParensOptions:
+  AfterOverloadedOperator: true    #在重载操作符后增加空格
+##########################宏观风格
+
+
+
+#################宏风格
+#连续的宏进行对齐
+AlignConsecutiveMacros:
+  Enabled: true
+  AcrossEmptyLines: true
+  AcrossComments: false
+# 向左对齐\
+AlignEscapedNewlines: Left
+# 对#if #endif 进行缩进，仅缩进#后的内容
+IndentPPDirectives: AfterHash
+##################宏风格
+
+
+
+#################头文件风格
+#对头文件按照： 1.标准库  2.非标准库  3.本仓库其他模块头文件  4.本模块代码   的顺序进行排序
+IncludeCategories: 
+  - Regex:  '^<[^/]*>$'         #标准库 以<xxx>形式引入
+    Priority:   1
+  - Regex:  '^<ares/.*>$'       #本仓库内其他模块头文件，以<ares/module-namespace/header.h>引入，注意优先级排在非标准库之后
+    Priority:   8
+  - Regex:  '^<.*/.*>$'         #非标准库，以<lib-name/path/to/header>
+    Priority:   4
+  - Regex:  '^"[^\.].*/.*"$'    #本仓库内其他模块头文件，以“path/to/header”引入的头文件
+    Priority:   12
+  - Regex:  '.*'                #本模块内的头文件
+    Priority:   16
+##################头文件风格
+
+
+
+#################命名空间风格
+#在命名空间中缩进
+NamespaceIndentation: All
+##################命名空间风格
+
+
+
+#################变量风格
+# 连续声明时，对齐所有声明的变量名
+AlignConsecutiveDeclarations: true
+# 连续赋值时，对齐所有等号
+AlignConsecutiveAssignments:
+  Enabled: true
+  AlignCompound: true #复和操作符对齐如+=和=  &=等
+
+#AlignAfterOpenBracket: AlwaysBreak
+#BracedInitializerIndentWidth: 2
+##################变量风格
+
+
+
+###################操作符风格
+# 若二元运算符表达式超过一行，总是在二元运算符后换行
+BreakBeforeBinaryOperators: None
+# 若三元运算符换行时，总是在运算符后换行
+BreakBeforeTernaryOperators: false
+#####################操作符类风格
+
+
+
+###################enum风格
+# 不允许短enum在一行
+AllowShortEnumsOnASingleLine: false
+#####################enum类风格
+
+
+
+###################控制语句风格
+# 支持一行的if
+AllowShortIfStatementsOnASingleLine: false
+# switch的case缩进
+IndentCaseLabels: true
+#####################控制语句风格
+
+
+####################函数风格
+# 函数参数换行
+AllowAllParametersOfDeclarationOnNextLine: true
+# c++11新标准的属性，后面总是换行，如[[nodiscard]]
+BreakAfterAttributes: Always
+# 不允许短函数换行
+AllowShortFunctionsOnASingleLine: None
+#####################函数风格
+
+
+###################类风格
+# 访问修饰符前的空格
+AccessModifierOffset: -4
+# 若类初始化列表超过一行，总是在:后换行
+BreakConstructorInitializers: AfterColon
+# 类初始化列表尽力放在当前行，或者下一行，若都不能实现，则各占一行
+PackConstructorInitializers: NextLine
+# 访问修饰符后永远不加空行
+EmptyLineAfterAccessModifier: Never
+# 访问修饰符后面有内容时，在该访问修饰符前加空行
+EmptyLineBeforeAccessModifier: LogicalBlock
+#####################类风格
+
+
+
+###################模板风格
+#总是在template声明后换行
+AlwaysBreakTemplateDeclarations: true
+#####################模板风格
+
+
+
+##################注释风格
+# clang-format-17 自动在//后增加空格
+# 注释对齐
+AlignTrailingComments:
+  Kind: Always
+  OverEmptyLines: 1
+# 行尾的注释前加1个空格
+SpacesBeforeTrailingComments: 3
+# 允许重新排版注释
+ReflowComments: true
+####################注释风格
+
+
+
+###################其他风格
+# 不同进制的整数的分隔符样式：每个字节一个分隔符
+IntegerLiteralSeparator:
+  Binary: 8            
+  Decimal: 3
+  Hex: 2
+#####################其他风格
