@@ -22,10 +22,6 @@ namespace poker::thread::manage
             }
         }
 
-    public:
-        ThreadAutoJoin(const ThreadAutoJoin &another)             = delete;
-        ThreadAutoJoin &operator= (const ThreadAutoJoin &another) = delete;
-
     private:
         std::thread main_thread_;
     };
