@@ -11,3 +11,4 @@ target_compile_features(poker_compiler_flag INTERFACE cxx_std_17)
 target_link_options(poker_compiler_flag INTERFACE "-pthread")
 
 add_subdirectory(thread)
+add_subdirectory(test)
