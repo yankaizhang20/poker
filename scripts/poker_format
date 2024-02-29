@@ -1,11 +1,11 @@
 #!/bin/bash
 
-source $(dirname $0)/utils/utils.bash
+source "$(dirname "$0")"/utils/utils.bash
 
 # @brief: 格式化当前命令
 
-safe source $(dirname $0)/var/poker_var.bash
-safe source $(dirname $0)/format/format.bash
+safe source "$(dirname $0)"/var/poker_var.bash
+safe source "$(dirname $0)"/format/format.bash
 
 echo ${POKER_SUFFIX_CXX} | tr \; \\n | while read cxx_suffix; do
   Format . "-name "*.${cxx_suffix}"" ${POKER_FORMAT_FILE_PATH}

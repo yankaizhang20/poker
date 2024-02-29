@@ -1,0 +1,40 @@
+#!/bin/bash
+
+# @brief: 使用 terminator 启动配置文件中的多个任务，本脚本仅专注于解析配置中的参数
+# $1: launch 配置文件位置
+
+# 引入 safe
+source "$(dirname "$0")"/utils/utils.bash
+
+# 引入 yaml 脚本解析
+safe source "$(dirname "$0")"/parser/yaml/parse_yaml.sh
+# 引入 terminator layout 处理
+safe source "$(dirname "$0")"/terminator/layout.bash
+
+# 执行目录：命令的列表，如 "/bin/:cd /bin/:mv"
+DIR_COMMAND_LIST=()
+
+# TODO:DELETE
+path="./test/task.yml"
+
+# 解析配置文件，将根据配置文件生成相应变量
+eval "$(parse_yaml "${path}")"
+
+# 遍历所有 task，读取每个 task 的配置项
+# shellcheck disable=SC2154
+for task_entry in ${task_};do
+  # 任务名称
+  name=${task_entry}_name
+  # 工作目录
+  work_directory=${task_entry}_directory
+  # 执行命令
+  command=${task_entry}_command
+
+  DIR_COMMAND_LIST+=("${!name}:${!work_directory}:${!command}")
+done
+
+# 启动所有任务
+launch "${DIR_COMMAND_LIST[@]}"
+
+
+
