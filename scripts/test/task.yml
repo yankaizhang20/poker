@@ -1,0 +1,6 @@
+---
+task:
+  - {name: "taskname1",directory: "//",command: "cd /"}
+  - {name: "taskname",directory: "/",command: "echo hello"}
+...
+
