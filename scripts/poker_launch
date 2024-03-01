@@ -9,7 +9,7 @@ source "$(dirname "$0")"/utils/utils.bash
 # 引入 yaml 脚本解析
 safe source "$(dirname "$0")"/parser/yaml/parse_yaml.sh
 # 引入 terminator layout 处理
-safe source "$(dirname "$0")"/terminator/layout.bash
+safe source "$(dirname "$0")"/terminator/launch.bash
 
 # 执行目录：命令的列表，如 "/bin/:cd /bin/:mv"
 DIR_COMMAND_LIST=()

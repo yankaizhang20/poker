@@ -1,0 +1,10 @@
+[profiles]
+  [[default]]
+    background_darkness = 0.8
+    background_type = transparent
+    cursor_color = "#aaaaaa"
+    font = Monospace Bold 11
+    show_titlebar = False
+    scrollback_infinite = True
+    use_system_font = False
+  
