@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# @brief: 创建 layout，启动传入的多个命令
+# @brief: 创建 layout，从 bash 中启动传入的多个命令
 # $n: 任务名：执行目录：命令，如 task1:/bin/:cd
 function launch()
 {
@@ -8,8 +8,6 @@ function launch()
     local create_layout_command="create_layout"
 
     for task_profile in "$@";do
-      echo task_profile="${task_profile}"
-
       local profile
       while read entry; do
         profile+=("${entry}")
@@ -17,7 +15,7 @@ function launch()
 
       create_layout_command+=" -t ${profile[0]}"
       create_layout_command+=" -d ${profile[1]}"
-      create_layout_command+=" -x \"${profile[2]}\""
+      create_layout_command+=" -x \"trap /bin/bash 2;${profile[2]}; bash\""
 
       profile=()
     done
@@ -30,6 +28,8 @@ function launch()
     local root_script_dir="$(dirname "${BASH_SOURCE[0]}")"
     cat "${root_script_dir}"/config_global_config.template > "${temp_terminator_config}" 2>/dev/null
     cat "${root_script_dir}"/config_profile.template >> "${temp_terminator_config}" 2>/dev/null
+
+#    eval ${create_layout_command}
 
     # 调用 create_layout 创建 terminator config
     if echo "$(eval ${create_layout_command})" >> "${temp_terminator_config}" 2>/dev/null; then
@@ -137,6 +137,8 @@ function create_layout()
       ${config_entry_indent}profile = default
       ${config_entry_indent}parent = ${parent}
       ${config_entry_indent}order = ${order}
+      ${config_entry_indent}command = ${commands[$((cur_terminal_nums-1))]}
+      ${config_entry_indent}directory = ${dirs[$((cur_terminal_nums-1))]}
       "
     done
 

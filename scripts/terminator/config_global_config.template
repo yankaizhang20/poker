@@ -1,5 +1,5 @@
 [global_config]
-  tab_position = hidden
+  #tab_position = hidden
   scroll_tabbar = True
   homogeneous_tabbar = False
   title_hide_sizetext = True

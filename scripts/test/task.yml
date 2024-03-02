@@ -1,7 +1,10 @@
 ---
 task:
-  - {name: "taskname1",directory: "/bin",command: "cd /"}
-  - {name: "taskname2",directory: "/usr",command: "echo hello;source ~/.zshrc"}
-  - {name: "taskname3",directory: "/home",command: "echo hello;cd /"}
+  - {name: "taskname1",directory: "/bin",command: "/home/zyk/0career/project/internal/poker/scripts/test/loop"}
+  - {name: "taskname2",directory: "/usr",command: "echo hello;sleep 100"}
+  - {name: "taskname3",directory: "/home",command: "while [ 1=1 ];do echo hello;done"}
+  - {name: "taskname4",directory: "/home",command: "/home/zyk/0career/project/internal/poker/scripts/test/loop"}
+  - {name: "taskname4",directory: "/home",command: "/home/zyk/0career/project/internal/poker/scripts/test/loop"}
+  - {name: "taskname4",directory: "/home",command: "/home/zyk/0career/project/internal/poker/scripts/test/loop"}
 ...
 

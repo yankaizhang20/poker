@@ -7,6 +7,9 @@
 #        若已经有 terminator 运行，希望使用改脚本启动新的 terminator，可以手动
 #        打开 terminator 的 preference 以加载新的 layout，然后执行
 #                   terminator -l default
+# @TODO: 解决 terminator -g 问题
+# @TODO: 解决命令在终端排序不一致问题
+
 
 # 引入 safe
 source "$(dirname "$0")"/utils/utils.bash
@@ -19,11 +22,14 @@ safe source "$(dirname "$0")"/terminator/launch.bash
 # 执行目录：命令的列表，如 "/bin/:cd /bin/:mv"
 DIR_COMMAND_LIST=()
 
-# TODO:DELETE
-path="./test/task.yml"
+# 检查配置文件存在性
+if [ ! -e "$1" ];then
+  echo "$1 doesn't not exist"
+  exit 1
+fi
 
 # 解析配置文件，将根据配置文件生成相应变量
-eval "$(parse_yaml "${path}")"
+eval "$(parse_yaml "$1")"
 
 # 遍历所有 task，读取每个 task 的配置项
 # shellcheck disable=SC2154
