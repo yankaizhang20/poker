@@ -1,6 +1,7 @@
 ---
 task:
-  - {name: "taskname1",directory: "//",command: "cd /"}
-  - {name: "taskname",directory: "/",command: "echo hello;source ~/.zshrc"}
+  - {name: "taskname1",directory: "/bin",command: "cd /"}
+  - {name: "taskname2",directory: "/usr",command: "echo hello;source ~/.zshrc"}
+  - {name: "taskname3",directory: "/home",command: "echo hello;cd /"}
 ...
 

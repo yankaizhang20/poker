@@ -1,7 +1,12 @@
 #!/bin/bash
 
 # @brief: 使用 terminator 启动配置文件中的多个任务，本脚本仅专注于解析配置中的参数
-# $1: launch 配置文件位置
+# @pos: 1 launch 配置文件位置
+# @note: 由于 terminator -g option 无法正常使用，本脚本仅当不存在 terminator
+#        进程时可顺利执行。
+#        若已经有 terminator 运行，希望使用改脚本启动新的 terminator，可以手动
+#        打开 terminator 的 preference 以加载新的 layout，然后执行
+#                   terminator -l default
 
 # 引入 safe
 source "$(dirname "$0")"/utils/utils.bash

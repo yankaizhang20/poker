@@ -7,4 +7,3 @@
   suppress_multiple_term_dialog = True
   title_use_system_font = False
   title_font = Sans Bold Italic 12
-  smart_copy = False
