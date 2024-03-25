@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # @brief: 创建 layout，从 bash 中启动传入的多个命令
-# $n: 任务名：执行目录：命令，如 task1:/bin/:cd
+# @position: n 任务名：执行目录：命令，如 task1:/bin/:cd
 function launch()
 {
     # 解析各任务配置，并生成创建配置的调用命令

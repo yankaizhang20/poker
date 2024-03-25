@@ -1,0 +1,9 @@
+---
+task:
+  - { name: "roscore",directory: "/home/zyk/0career/project/internal/waytous/ares/planplus-ares",command: "if ps -aux|grep roscore|grep -v roscore;then echo roscore is running;else roscore; fi" }
+  - { name: "map_origin_exe",directory: "/home/zyk/0career/project/internal/waytous/ares/planplus-ares",command: "source setup.bash; ./code/cmake-build-release/modules/map/lanelet/origin/map-lanelet-origin-exe" }
+  - { name: "cloud_platform",directory: "/home/zyk/0career/project/internal/waytous/ares/planplus-ares",command: " ./code/cmake-build-release/modules/app/open_pit_mine/debugger/cloud_platform/open_pit_mine-debugger-cloud_platform-exe" }
+  - { name: "tianchi_cloud_sim",directory: "/home/zyk/0career/project/internal/waytous/ares/planplus-ares",command: "bash -c \"source setup.bash; ./code/cmake-build-release/modules/app/open_pit_mine/open_pit_mine-tianchi_cloud_sim-TEST\"" }
+  - { name: "tianchi_onboard_sim",directory: "/home/zyk/0career/project/internal/waytous/ares/planplus-ares",command: "if source setup.bash;then ./code/cmake-build-release/modules/app/open_pit_mine/open_pit_mine-tianchi_onboard_sim-TEST; fi" }
+  - { name: "eon_log_viewer",directory: "/home/zyk/0career/project/internal/waytous/eon-log_onboard_viewer",command: "source setup.bash; ./build/src/app/app" }
+...
