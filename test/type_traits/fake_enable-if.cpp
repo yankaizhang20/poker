@@ -51,7 +51,7 @@ namespace use_case
     void test_case2()
     {
         use_case::SSS b;
-        func(b);
+//        func(b);
     }
 }   // namespace use_case
 

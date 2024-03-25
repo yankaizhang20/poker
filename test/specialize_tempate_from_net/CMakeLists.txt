@@ -1,0 +1,1 @@
+add_executable(test_specialize_template_from_net main.cpp other.cpp)

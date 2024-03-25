@@ -1,1 +1,6 @@
 add_subdirectory(type_traits)
+add_subdirectory(extern)
+add_subdirectory(variable_template)
+add_subdirectory(specialize_class_template)
+add_subdirectory(specialize_tempate_from_net)
+add_subdirectory(specialize_function_template)

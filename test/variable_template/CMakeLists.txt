@@ -1,0 +1,1 @@
+add_executable(test_variable_template main.cpp func.cpp)

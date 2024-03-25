@@ -1,0 +1,1 @@
+add_executable(test_specialize_function_template main.cpp header.cpp func.cpp)
