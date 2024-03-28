@@ -1,8 +1,17 @@
 pipeline {
     agent any
-    stages {
-        stage('build') {
-            steps {
+
+    parameters
+    {
+        string name: 'Greeting', defaultValue: 'Hello', description: 'How should I greet the world?'
+    }
+
+    stages
+    {
+        stage('build')
+        {
+            steps
+            {
                 echo 'hello jenkins'
             }
         }
