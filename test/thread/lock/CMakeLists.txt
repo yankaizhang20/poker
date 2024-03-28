@@ -1,0 +1,1 @@
+add_executable(locking_strategy locking_strategy.cpp)

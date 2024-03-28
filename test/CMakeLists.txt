@@ -1,4 +1,6 @@
 add_subdirectory(type_traits)
+add_subdirectory(thread)
+add_subdirectory(rvalue_reference)
 add_subdirectory(extern)
 add_subdirectory(variable_template)
 add_subdirectory(specialize_class_template)
