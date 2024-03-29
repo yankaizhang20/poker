@@ -1,1 +1,2 @@
 add_executable(locking_strategy locking_strategy.cpp)
+target_link_libraries(locking_strategy PRIVATE poker_compiler_flag)

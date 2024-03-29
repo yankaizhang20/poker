@@ -1,0 +1,1 @@
+add_executable(hardware_concurrency hardware_concurrency.cpp)
