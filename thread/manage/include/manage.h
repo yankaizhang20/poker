@@ -8,21 +8,33 @@ namespace poker::thread::manage
     class ThreadAutoJoin
     {
     public:
+        /**
+         * @brief 从头构造一个线程
+         */
         template < class F, class... Args >
         explicit ThreadAutoJoin(F &&f, Args &&...args)
         {
-            main_thread_ = std::thread(std::forward< F >(f), std::forward< Args >(args)...);
+            t_ = std::thread(std::forward< F >(f), std::forward< Args >(args)...);
+        }
+
+        /**
+         * @brief 接管线程
+         * @note 不对本类是否已经管理了线程进行检查
+         */
+        explicit ThreadAutoJoin(std::thread &&thread)
+        {
+            t_ = std::move(thread);
         }
 
         ~ThreadAutoJoin()
         {
-            if (main_thread_.joinable())
+            if (t_.joinable())
             {
-                main_thread_.join();
+                t_.join();
             }
         }
 
     private:
-        std::thread main_thread_;
+        std::thread t_;
     };
 }   // namespace poker::thread::manage
