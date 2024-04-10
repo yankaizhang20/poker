@@ -1,0 +1,1 @@
+add_executable(solver1 solver1.cpp)
