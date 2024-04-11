@@ -1,0 +1,5 @@
+add_library(staticlib STATIC library.cpp)
+
+#结论：静态库中未定义的符号按编译单元传递
+add_executable(U_symbol_transmit_during_static_link main.cpp)
+target_link_libraries(U_symbol_transmit_during_static_link staticlib)
