@@ -37,4 +37,6 @@ namespace poker::thread::manage
     private:
         std::thread t_;
     };
+
+    void Test();
 }   // namespace poker::thread::manage
