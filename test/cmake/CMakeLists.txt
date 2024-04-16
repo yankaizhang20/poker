@@ -1,3 +1,5 @@
 add_subdirectory(function_position)
 add_subdirectory(shared_link_static)
 add_subdirectory(static_link_dynamic)
+add_subdirectory(static_link_static)
+add_subdirectory(dynamic_link_dynamic)
