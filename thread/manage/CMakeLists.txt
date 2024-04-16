@@ -3,6 +3,7 @@ target_include_directories(thread-manage INTERFACE
         $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
         $<INSTALL_INTERFACE:include>
 )
+target_link_libraries(thread-manage PUBLIC thread-lock-hierarchical)
 
 add_executable(thread-manage_test test/main.cpp)
 target_link_libraries(thread-manage_test
