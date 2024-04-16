@@ -1,0 +1,2 @@
+# 测试静态变量初始化
+add_executable(global_initialization global_initialization.cpp)
