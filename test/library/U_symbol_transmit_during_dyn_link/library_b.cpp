@@ -4,7 +4,14 @@
 
 #include "./api_b.h"
 
+
+#ifdef TEST
 void NoDefFuncB();
+#else
+void NoDefFuncB()
+{
+}
+#endif
 
 void ApiAnotherFuncB(int)
 {

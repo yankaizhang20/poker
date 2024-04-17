@@ -4,7 +4,13 @@
 
 #pragma once
 
-/**
- * @brief 具有死锁避免功能的互斥锁
- */
-class hierarchical_mutex;
+
+namespace poker::thread::lock
+{
+    /**
+     * @brief 具有死锁避免功能的互斥锁
+     */
+    class hierarchical_mutex;
+
+    void TestHierarchical();
+}   // namespace poker::thread::lock

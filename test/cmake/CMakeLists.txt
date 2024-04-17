@@ -1,9 +1,2 @@
-function(fun1)
-    func2("arg")
-endfunction()
-
-function(func2)
-    message(STATUS "arg is " ${ARGN})
-endfunction()
-
-fun1()
+add_subdirectory(function_position)
+add_subdirectory(static_dynamic-target_link)
