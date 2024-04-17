@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.15)
 
+# TODO: 实现导出后 target 依赖可以在 find_package(target) 中自动导入
+
 # 项目信息
 project(poker
         VERSION 0.0.1
