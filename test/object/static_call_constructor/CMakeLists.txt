@@ -1,0 +1,3 @@
+add_executable(static_call_constructor main.cpp)
+
+#target_compile_definitions(static_call_constructor PUBLIC TEST)
