@@ -18,7 +18,6 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/poker_install)
 
 # 组件
 add_subdirectory(thread)
-add_subdirectory(concurrency)
 add_subdirectory(test)
 
 # distribute
