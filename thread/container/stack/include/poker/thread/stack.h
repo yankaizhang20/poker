@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include <memory>
 #include <optional>
 #include <shared_mutex>
 #include <stack>
@@ -15,11 +16,19 @@ namespace poker::thread
     class Stack
     {
     public:
+        Stack(const Stack &other)
+        {
+            std::shared_lock guard(other.m_);
+
+            data_ = other.data_;
+        }
+
+    public:
         void push(T data)
         {
             std::lock_guard guard(m_);
 
-            data_.push_back(std::shared_ptr< T >(new T(std::move(data))));
+            data_.push_back(std::move(data));
         }
 
         template < class... Args >
@@ -27,7 +36,7 @@ namespace poker::thread
         {
             std::lock_guard guard(m_);
 
-            data_.emplace(std::shared_ptr< T >(new T(std::forward< Args >(args)...)));
+            data_.emplace(std::forward< Args >(args)...);
         }
 
         bool try_pop(T &data)
@@ -39,12 +48,12 @@ namespace poker::thread
                 return false;
             }
 
-            data = std::move(*data_.top());
+            data = data_.top();
 
             data_.pop();
         }
 
-        std::optional< std::shared_ptr< T > > try_pop()
+        std::shared_ptr< T > try_pop()
         {
             std::lock_guard guard(m_);
 
@@ -53,17 +62,17 @@ namespace poker::thread
                 return {};
             }
 
-            auto top = data_.top();
+            auto p_top = std::make_shared(data_.top());
 
             data_.pop();
 
-            return top;
+            return p_top;
         }
 
     private:
         std::shared_mutex m_;
 
         // TODO:使用哪种数据结构类实现的依据，这里仅仅是因为 stack 提供了相应的接口而已
-        std::stack< std::shared_ptr< T > > data_;
+        std::stack< T > data_;
     };
 }   // namespace poker::thread
