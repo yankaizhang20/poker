@@ -16,6 +16,14 @@ namespace poker::thread
     class Queue
     {
     public:
+        Queue(const Queue &other)
+        {
+            std::lock_guard guard(other.m_);
+
+            queue_ = other.queue_;
+        }
+
+    public:
         void push(const T &value)
         {
             {
