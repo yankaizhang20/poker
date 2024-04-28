@@ -21,7 +21,7 @@ namespace poker::thread
             {
                 std::lock_guard guard(m_);
 
-                queue_.push(value);
+                queue_.push(std::make_shared< T >(value));
             }
             con_.notify_one();
         }
@@ -32,7 +32,7 @@ namespace poker::thread
             {
                 std::lock_guard guard(m_);
 
-                queue_.emplace(std::forward< Args >(args)...);
+                queue_.emplace(std::make_shared< T >(std::forward< Args >(args)...));
             }
             con_.notify_one();
         }
@@ -62,7 +62,7 @@ namespace poker::thread
                 return nullptr;
             }
 
-            auto p_top = std::make_shared< T >(std::move(queue_.front()));
+            auto p_top = std::move(queue_.front());
 
             queue_.pop();
 
@@ -75,7 +75,7 @@ namespace poker::thread
 
             con_.wait(guard, [ this ]() { return !queue_.empty(); });
 
-            value = std::move(queue_.front());
+            value = std::move(*queue_.front());
 
             queue_.pop();
         }
@@ -86,7 +86,7 @@ namespace poker::thread
 
             con_.wait(guard, [ this ]() { return !queue_.empty(); });
 
-            auto p_top = std::make_shared< T >(std::move(queue_.front()));
+            auto p_top = std::move(queue_.front());
 
             queue_.pop();
 
@@ -97,6 +97,6 @@ namespace poker::thread
         std::shared_mutex       m_;
         std::condition_variable con_;
 
-        std::queue< T > queue_;
+        std::queue< std::shared_ptr< T > > queue_;
     };
 }   // namespace poker::thread
