@@ -46,7 +46,7 @@ namespace poker::thread
                 return false;
             }
 
-            value = queue_.front();
+            value = std::move(queue_.front());
 
             queue_.pop();
 
@@ -59,10 +59,10 @@ namespace poker::thread
 
             if (queue_.empty())
             {
-                return false;
+                return nullptr;
             }
 
-            auto p_top = std::make_shared< T >(queue_.front());
+            auto p_top = std::make_shared< T >(std::move(queue_.front()));
 
             queue_.pop();
 
@@ -75,7 +75,7 @@ namespace poker::thread
 
             con_.wait(guard, [ this ]() { return !queue_.empty(); });
 
-            value = queue_.front();
+            value = std::move(queue_.front());
 
             queue_.pop();
         }
@@ -86,7 +86,7 @@ namespace poker::thread
 
             con_.wait(guard, [ this ]() { return !queue_.empty(); });
 
-            auto p_top = std::make_shared< T >(queue_.front());
+            auto p_top = std::make_shared< T >(std::move(queue_.front()));
 
             queue_.pop();
 
