@@ -6,8 +6,7 @@
 
 #include <condition_variable>
 #include <memory>
-#include <queue>
-#include <shared_mutex>
+#include <mutex>
 
 
 namespace poker::thread
@@ -16,95 +15,72 @@ namespace poker::thread
     class Queue
     {
     public:
+        Queue() : head_(new Node()), tail_(head_)
+        {
+        }
         Queue(const Queue &other)
         {
-            std::lock_guard guard(other.m_);
-
-            queue_ = other.queue_;
         }
 
     public:
         void push(const T &value)
         {
-            {
-                std::lock_guard guard(m_);
+            auto p_dummy_node = new Node();
 
-                queue_.push(std::make_shared< T >(value));
-            }
-            con_.notify_one();
+            std::lock_guard guard(t_m_);
+
+            // 在原有尾部构造新数据
+            tail_->p_data = std::make_shared< T >(value);
+            tail_->next   = p_dummy_node;
+
+            // 使 tail 指向新的傀儡节点
+            tail_ = p_dummy_node;
         }
 
         template < class... Args >
         void emplace(Args &&...args)
         {
-            {
-                std::lock_guard guard(m_);
-
-                queue_.emplace(std::make_shared< T >(std::forward< Args >(args)...));
-            }
-            con_.notify_one();
         }
 
         bool try_pop(T &value)
         {
-            std::lock_guard guard(m_);
+            std::lock_guard guard(h_m_);
 
-            if (queue_.empty())
-            {
-                return false;
-            }
+            // 若为初始状态，则返回 false
 
-            value = std::move(queue_.front());
+            auto old_head = head_;
+            value         = *old_head->p_data;
 
-            queue_.pop();
+            head_ = old_head->next;
 
-            return true;
+            delete old_head;
         }
 
         std::shared_ptr< T > try_pop()
         {
-            std::lock_guard guard(m_);
-
-            if (queue_.empty())
-            {
-                return nullptr;
-            }
-
-            auto p_top = std::move(queue_.front());
-
-            queue_.pop();
-
-            return p_top;
         }
 
         void wait_and_pop(T &value)
         {
-            std::unique_lock guard(m_);
-
-            con_.wait(guard, [ this ]() { return !queue_.empty(); });
-
-            value = std::move(*queue_.front());
-
-            queue_.pop();
         }
 
         std::shared_ptr< T > wait_and_pop()
         {
-            std::unique_lock guard(m_);
-
-            con_.wait(guard, [ this ]() { return !queue_.empty(); });
-
-            auto p_top = std::move(queue_.front());
-
-            queue_.pop();
-
-            return p_top;
         }
 
     private:
-        std::shared_mutex       m_;
+        struct Node
+        {
+            std::shared_ptr< T > p_data = nullptr;
+            Node                *next   = nullptr;
+        };
+
+    private:
+        std::mutex              h_m_, t_m_;
         std::condition_variable con_;
 
-        std::queue< std::shared_ptr< T > > queue_;
+        bool is_init = true;
+
+        Node *head_, *tail_;
     };
 }   // namespace poker::thread
