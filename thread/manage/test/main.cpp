@@ -16,7 +16,7 @@ void Func(int begin, int end)
 int main()
 {
     {
-        poker::thread::manage::ThreadAutoJoin t1(Func, 1, 1000);
+        poker::thread::manage::Thread t1(Func, 1, 1000);
     }
 
     std::cout << "线程结束" << std::endl;

@@ -1,42 +1,62 @@
 #include <thread>
 
-namespace poker::thread::manage
+namespace poker::thread
 {
+    enum class Retrieve
+    {
+        Join,
+        Detach
+    };
+
     /**
      * @brief 用以创建异常安全的线程
      */
-    class ThreadAutoJoin
+    class Thread
     {
     public:
         /**
          * @brief 从头构造一个线程
          */
         template < class F, class... Args >
-        explicit ThreadAutoJoin(F &&f, Args &&...args)
+        explicit Thread(F &&f, Args &&...args, Retrieve retrieve_action) :
+            retrieve_action_(retrieve_action), t_(std::thread(std::forward< F >(f), std::forward< Args >(args)...))
         {
-            t_ = std::thread(std::forward< F >(f), std::forward< Args >(args)...);
         }
 
         /**
          * @brief 接管线程
          * @note 不对本类是否已经管理了线程进行检查
          */
-        explicit ThreadAutoJoin(std::thread &&thread)
+        explicit Thread(std::thread &&thread, Retrieve retrieve_action) :
+            retrieve_action_(retrieve_action), t_(std::move(thread))
         {
-            t_ = std::move(thread);
         }
 
-        ~ThreadAutoJoin()
+        ~Thread()
         {
             if (t_.joinable())
             {
-                t_.join();
+                if (retrieve_action_ == Retrieve::Join)
+                {
+                    t_.join();
+                }
+                else
+                {
+                    t_.detach();
+                }
             }
         }
 
+        std::thread &Get()
+        {
+            return t_;
+        }
+
     private:
+        Retrieve retrieve_action_;
+
         std::thread t_;
     };
 
     void Test();
-}   // namespace poker::thread::manage
+}   // namespace poker::thread
