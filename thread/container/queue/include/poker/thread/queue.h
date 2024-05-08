@@ -20,6 +20,9 @@ namespace poker::thread
         }
         Queue(const Queue &other)
         {
+            std::scoped_lock guard(other.h_m_, other.t_m_);
+
+            copy_list(other.p_head_.get());
         }
 
     public:
@@ -127,6 +130,17 @@ namespace poker::thread
             con_.wait(guard, [ this ]() { return p_head_.get() != get_tail(); });
 
             return pop_head();
+        }
+
+    private:
+        void copy_list(const std::unique_lock< Node > &p_head)
+        {
+            std::unique_lock< Node > cur = p_head_, another_cur = p_head;
+
+            while (cur and another_cur)
+            {
+                cur =
+            }
         }
 
     private:
