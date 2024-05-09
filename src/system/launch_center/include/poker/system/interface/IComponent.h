@@ -7,11 +7,17 @@
 
 namespace poker::system
 {
+    class LaunchCenter;
+
     class IComponent
     {
     public:
         virtual ~IComponent() = default;
 
+    private:
+        friend class LaunchCenter;
+
+    private:
         /**
          * @brief 初始化
          */
