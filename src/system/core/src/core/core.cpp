@@ -4,6 +4,7 @@
 
 #include <csignal>
 #include <future>
+#include <iostream>
 
 #include <poker/system/launch_center.h>
 
@@ -23,8 +24,10 @@ namespace poker
         {
             switch (signal)
             {
+                case SIGINT:
                 case SIGTERM:
                 {
+                    std::cout << " ==== process exit! ====" << std::endl;
                     wait_closed.set_value();
                 }
                 break;
@@ -36,6 +39,7 @@ namespace poker
     {
         // 处理终止信号
         std::signal(SIGTERM, SignalHandler);
+        std::signal(SIGINT, SignalHandler);
 
         // 启动中心启动所有模块
         system::GetLaunchCenter().launch();
