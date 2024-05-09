@@ -3,3 +3,8 @@
 //
 
 #include <poker/macro.h>
+
+
+int main()
+{
+}

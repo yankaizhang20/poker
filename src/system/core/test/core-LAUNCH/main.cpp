@@ -8,7 +8,7 @@
 class ModuleA : public poker::AutoComponent< ModuleA >
 {
 public:
-    void Setup() override
+    void Start() override
     {
         std::cout << "ModuleA start!" << std::endl;
     }
@@ -27,7 +27,7 @@ public:
 class ModuleB : public poker::AutoComponent< ModuleB >
 {
 public:
-    void Setup() override
+    void Start() override
     {
         std::cout << "ModuleB start!" << std::endl;
     }

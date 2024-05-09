@@ -3,3 +3,8 @@
 //
 
 #include <poker/pattern/singleton.h>
+
+
+int main()
+{
+}

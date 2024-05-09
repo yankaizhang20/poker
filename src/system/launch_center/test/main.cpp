@@ -3,3 +3,7 @@
 //
 
 #include "poker/system/interface/IComponent.h"
+
+int main()
+{
+}
