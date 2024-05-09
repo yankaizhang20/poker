@@ -18,7 +18,7 @@ namespace poker::thread
          * @brief 从头构造一个线程
          */
         template < class F, class... Args >
-        explicit Thread(F &&f, Args &&...args, Retrieve retrieve_action) :
+        explicit Thread(Retrieve retrieve_action, F &&f, Args &&...args) :
             retrieve_action_(retrieve_action), t_(std::thread(std::forward< F >(f), std::forward< Args >(args)...))
         {
         }
