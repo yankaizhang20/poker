@@ -21,7 +21,7 @@ namespace poker::system
     {
         for (auto &[ priority, p_component ] : comps_)
         {
-            p_component->Setup();
+            p_component->Start();
         }
     }
 

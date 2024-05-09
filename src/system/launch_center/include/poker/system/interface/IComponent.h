@@ -3,6 +3,7 @@
 //
 
 #pragma once
+#include <cstddef>
 
 
 namespace poker::system
@@ -21,7 +22,7 @@ namespace poker::system
         /**
          * @brief 初始化
          */
-        virtual void Setup() = 0;
+        virtual void Start() = 0;
 
         /**
          * @brief 结束
