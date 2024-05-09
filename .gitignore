@@ -2,7 +2,10 @@ cmake-build-debug
 cmake-build-release
 build
 
+poker_install
+
 .vscode
 .idea
 
 *.log
+*.tar.xz
