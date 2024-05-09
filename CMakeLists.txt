@@ -9,6 +9,9 @@ project(poker
         LANGUAGES CXX
 )
 
+# 引入 cmake 工具
+include(./cmake/directory.cmake)
+
 # 设置 c++ 标准，以及常用的编译、链接选项
 add_library(poker_compiler_flag INTERFACE)
 target_compile_features(poker_compiler_flag INTERFACE cxx_std_17)
@@ -16,9 +19,8 @@ target_link_options(poker_compiler_flag INTERFACE "-pthread")
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/poker_install)
 
-# 组件
-add_subdirectory(thread)
-add_subdirectory(test)
+# 源代码
+poker_add_subdirectories(src)
 
 # distribute
 set(CPACK_GENERATOR "DEB")

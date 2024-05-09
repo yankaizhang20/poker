@@ -2,4 +2,4 @@
 add_executable(global_initialization global_initialization.cpp)
 
 # 测试不同类型的同名全局变量
-add_subdirectory(object_with_same_name)
+poker_add_subdirectories()

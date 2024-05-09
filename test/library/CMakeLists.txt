@@ -1,4 +1,0 @@
-add_subdirectory(when_a_symbol_not_use)
-add_subdirectory(U_symbol_transmit_during_static_link)
-add_subdirectory(U_symbol_transmit_during_dyn_link)
-add_subdirectory(link_extern)

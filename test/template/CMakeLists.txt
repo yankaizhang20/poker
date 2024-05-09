@@ -1,5 +1,0 @@
-add_subdirectory(variable_template)
-add_subdirectory(specialize_class_template)
-add_subdirectory(specialize_tempate_from_net)
-add_subdirectory(specialize_function_template)
-add_subdirectory(call_specialization_in_primary_template)

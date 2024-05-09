@@ -1,3 +1,5 @@
+# 测试不同类型的同名全局变量
+
 add_library(object_with_same_name-var_a SHARED var_a.cpp)
 
 add_library(object_with_same_name-var_b STATIC var_b.cpp)

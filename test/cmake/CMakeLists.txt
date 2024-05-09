@@ -1,2 +1,0 @@
-add_subdirectory(function_position)
-add_subdirectory(static_dynamic-target_link)
