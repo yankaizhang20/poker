@@ -1,0 +1,37 @@
+//
+// Created by zyk on 24-5-9.
+//
+
+#pragma once
+#include "./count.h"
+
+
+// ## 会抑制宏展开，加入中间层，使到达 _POKER_CONCAT_ 的宏充分展开
+#define INNER_CONCAT_BOTTOM(a, b) a##b
+#define INNER_CONCAT(a, b)        INNER_CONCAT_BOTTOM(a, b)
+
+#define POKER_CONCAT(...)         INNER_CONCAT(INNER_CONCAT_, POKER_COUNT_ARGS(__VA_ARGS__))(__VA_ARGS__)
+
+#define INNER_CONCAT_2(a, b)      INNER_CONCAT(a, b)
+#define INNER_CONCAT_3(x, ...)    INNER_CONCAT(x, INNER_CONCAT_2(__VA_ARGS__))
+#define INNER_CONCAT_4(x, ...)    INNER_CONCAT(x, INNER_CONCAT_3(__VA_ARGS__))
+#define INNER_CONCAT_5(x, ...)    INNER_CONCAT(x, INNER_CONCAT_4(__VA_ARGS__))
+#define INNER_CONCAT_6(x, ...)    INNER_CONCAT(x, INNER_CONCAT_5(__VA_ARGS__))
+#define INNER_CONCAT_7(x, ...)    INNER_CONCAT(x, INNER_CONCAT_6(__VA_ARGS__))
+#define INNER_CONCAT_8(x, ...)    INNER_CONCAT(x, INNER_CONCAT_7(__VA_ARGS__))
+#define INNER_CONCAT_9(x, ...)    INNER_CONCAT(x, INNER_CONCAT_8(__VA_ARGS__))
+#define INNER_CONCAT_10(x, ...)   INNER_CONCAT(x, INNER_CONCAT_9(__VA_ARGS__))
+#define INNER_CONCAT_11(x, ...)   INNER_CONCAT(x, INNER_CONCAT_10(__VA_ARGS__))
+#define INNER_CONCAT_12(x, ...)   INNER_CONCAT(x, INNER_CONCAT_11(__VA_ARGS__))
+#define INNER_CONCAT_13(x, ...)   INNER_CONCAT(x, INNER_CONCAT_12(__VA_ARGS__))
+#define INNER_CONCAT_14(x, ...)   INNER_CONCAT(x, INNER_CONCAT_13(__VA_ARGS__))
+#define INNER_CONCAT_15(x, ...)   INNER_CONCAT(x, INNER_CONCAT_14(__VA_ARGS__))
+#define INNER_CONCAT_16(x, ...)   INNER_CONCAT(x, INNER_CONCAT_15(__VA_ARGS__))
+#define INNER_CONCAT_17(x, ...)   INNER_CONCAT(x, INNER_CONCAT_16(__VA_ARGS__))
+#define INNER_CONCAT_18(x, ...)   INNER_CONCAT(x, INNER_CONCAT_17(__VA_ARGS__))
+#define INNER_CONCAT_19(x, ...)   INNER_CONCAT(x, INNER_CONCAT_18(__VA_ARGS__))
+#define INNER_CONCAT_20(x, ...)   INNER_CONCAT(x, INNER_CONCAT_19(__VA_ARGS__))
+#define INNER_CONCAT_21(x, ...)   INNER_CONCAT(x, INNER_CONCAT_20(__VA_ARGS__))
+#define INNER_CONCAT_22(x, ...)   INNER_CONCAT(x, INNER_CONCAT_21(__VA_ARGS__))
+#define INNER_CONCAT_23(x, ...)   INNER_CONCAT(x, INNER_CONCAT_22(__VA_ARGS__))
+#define INNER_CONCAT_24(x, ...)   INNER_CONCAT(x, INNER_CONCAT_23(__VA_ARGS__))
