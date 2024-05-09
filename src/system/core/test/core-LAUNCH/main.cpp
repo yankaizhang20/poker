@@ -48,7 +48,7 @@ POKER_NO_OPTIMIZED(ModuleB)
 
 int main()
 {
-    poker::init();
+    poker::Init();
 
     std::cout << "exit!" << std::endl;
 

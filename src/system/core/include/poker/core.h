@@ -12,11 +12,16 @@ namespace poker
     /**
      * @brief 初始化 poker
      */
-    void init();
+    void Init();
 
     /**
      * @brief 关闭 poker
      */
-    void shutdown();
+    void Shutdown();
+
+    /**
+     * @brief 阻塞等待进程被要求退出
+     */
+    void Yield();
 
 }   // namespace poker
