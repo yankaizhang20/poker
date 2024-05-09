@@ -22,6 +22,9 @@ set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/poker_install)
 # 源代码
 poker_add_subdirectories(src)
 
+# 实验
+poker_add_subdirectories(test)
+
 # distribute
 set(CPACK_GENERATOR "DEB")
 set(CPACK_DEBIAN_PACKAGE_MAINTAINER "POKER")
