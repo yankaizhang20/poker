@@ -1,15 +1,24 @@
 ###################################################################################
-# poker_add_library(target [DEPENDS ...] [IMPORTS ...] [LIBRARY ...] [INCLUDE ...] [SRC ...])
+# poker_add_library(<target>
+#                   [DEPENDS components...]
+#                   [IMPORTS components...]
+#                   [LIBRARY components...]
+#                   [INCLUDE components...]
+#                   [  SRC   components...]
+#                  )
 ###################################################################################
-# 1.添加 src 目录下的同名目录下的全部源文件
-# 2.若没有源文件，则作为 interface target
-# 3.将 include 目录作为本 target 的使用说明（specification）
+# 源文件位置： 1.添加 src 目录下名为 target 目录下的全部源文件
+#            2.添加 SRC 指定的所有目录下的源文件
+#            3.对以上目录递归搜索
+#            4.若没有源文件，则作为 interface target
+# 头文件位置： 1.将 include 作为头文件默认搜索路径，并作为本 target 的使用说明，依赖本 target 的
+#              其他 target 将看到该目录内的头文件
 ###################################################################################
 # DEPENDS: 依赖本工程内的其他 target
 # FORCE_DEPENDS: 强制链接本工程内的其他 target
 # IMPORTS: 依赖提供了 config 的外部库
 # LIBRARY: 直接依赖外部库
-# INCLUDE: 指定头文件搜索目录
+# INCLUDE: 指定头文件搜索目录，仅作为内部使用，将不被其他 target 看到
 # SRC: 额外添加源文件目录
 ###################################################################################
 
