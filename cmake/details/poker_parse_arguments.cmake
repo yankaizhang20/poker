@@ -29,9 +29,9 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
     endif ()
 endmacro()
 
-# 区分参数中的 Inner 参数
+# 区分参数中的 Inner Interface 参数
 macro(poker_split_arguments prefix)
-    cmake_parse_arguments(${prefix} "" "" "Inner" ${ARGN})
+    cmake_parse_arguments(${prefix} "" "" "Inner;Interface" ${ARGN})
 
     set(${prefix}_Export "${${prefix}_UNPARSED_ARGUMENTS}")
 endmacro()

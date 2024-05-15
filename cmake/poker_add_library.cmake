@@ -1,9 +1,9 @@
 ###################################################################################
 # poker_add_library(<target>
 #                   [SHARED]
-#                   [DEPENDS        <components [Inner components...]>]
-#                   [IMPORTS        <components [Inner components...]>]
-#                   [INCLUDE        <components [Inner components...]>]
+#                   [DEPENDS        <components [Inner components...] [Interface components...]>]
+#                   [IMPORTS        <components [Inner components...] [Interface components...]>]
+#                   [INCLUDE        <components [Inner components...] [Interface components...]>]
 #                   [FORCE_DEPENDS  components...]
 #                   [LIBRARY        components...]
 #                   [  SRC          components...]
@@ -82,13 +82,17 @@ function(poker_add_library target_name)
 
         target_include_directories(${target_name} INTERFACE
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-                $<INSTALL_INTERFACE:include,${config_INCLUDE_Export}>
+                $<INSTALL_INTERFACE:include,${config_INCLUDE_Export},${config_INCLUDE_Interface}>
         )
     else ()
         target_include_directories(${target_name} PUBLIC
                 $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include,${config_INCLUDE_Inner}>
                 $<INSTALL_INTERFACE:include,${config_INCLUDE_Export}>
         )
+
+        target_include_directories(${target_name} INTERFACE
+                $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}>
+                $<INSTALL_INTERFACE:${config_INCLUDE_Interface}>)
     endif ()
 
     # step 5: 添加依赖说明
