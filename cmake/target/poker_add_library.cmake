@@ -33,6 +33,8 @@
 ###################################################################################
 
 function(poker_add_library target_name)
+    include(GNUInstallDirs)
+
     # step 1: 解析位置参数
     poker_parse_arguments(config "SHARED" "" "" ${ARGN})
 
@@ -71,7 +73,7 @@ function(poker_add_library target_name)
 
     # step 4: 设置头文件搜索路径
 
-    # 解析 INCLUDE 后的 Inner 参数
+    # 解析 INCLUDE 后的 Inner、Interface参数
     poker_split_arguments(config_INCLUDE ${config_INCLUDE})
 
     if (${is_interface})
@@ -81,27 +83,44 @@ function(poker_add_library target_name)
         endif ()
 
         target_include_directories(${target_name} INTERFACE
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include>
-                $<INSTALL_INTERFACE:include,${config_INCLUDE_Export},${config_INCLUDE_Interface}>
+                $<BUILD_INTERFACE:
+                ${CMAKE_CURRENT_LIST_DIR}/include>,
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Export},
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}
+                $<INSTALL_INTERFACE:
+                ${CMAKE_INSTALL_INCLUDEDIR},
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Export},
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Interface}>
         )
     else ()
-        target_include_directories(${target_name} PUBLIC
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/include,${config_INCLUDE_Inner}>
-                $<INSTALL_INTERFACE:include,${config_INCLUDE_Export}>
+        target_link_libraries(${target_name} PRIVATE
+                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Inner}>
         )
 
         target_include_directories(${target_name} INTERFACE
-                $<BUILD_INTERFACE:${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}>
-                $<INSTALL_INTERFACE:${config_INCLUDE_Interface}>)
+                $<BUILD_INTERFACE:
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}>
+                $<INSTALL_INTERFACE:
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Interface}>
+        )
+
+        target_include_directories(${target_name} PUBLIC
+                $<BUILD_INTERFACE:
+                ${CMAKE_CURRENT_LIST_DIR}/include,
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Export}>
+                $<INSTALL_INTERFACE:
+                ${CMAKE_INSTALL_INCLUDEDIR},
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Export}>
+        )
     endif ()
 
     # step 5: 添加依赖说明
 
-    # 解析 DEPENDS、IMPORTS 后的 Inner 参数
+    # 解析 DEPENDS、IMPORTS 后的 Inner、Interface 参数
     poker_split_arguments(config_DEPENDS ${config_DEPENDS})
     poker_split_arguments(config_IMPORTS ${config_IMPORTS})
 
-    # 为强制链接目标增加链接选项
+    # 为强制链接目标增加依赖项
     foreach (depend ${config_FORCE_DEPENDS})
         get_target_property(target_type ${depend} TYPE)
 
@@ -116,51 +135,67 @@ function(poker_add_library target_name)
             "-Wl,--whole-archive ${FORCE_DEPENDS_TARGET_STATIC} -Wl,--no-whole-archive"
             "-Wl,--no-as-needed ${FORCE_DEPENDS_TARGET_SHARED} -Wl,--as-needed")
 
-    set(poker_target_depends_private ${config_DEPENDS_Inner} ${config_IMPORTS_Inner})
+    # TODO 为导入目标增加依赖项
+
+    # 整合各个链接项，完成依赖传递
+    set(poker_target_depends_interface ${config_DEPENDS_Interface} ${config_IMPORTS_Interface})
+    set(poker_target_depends_private ${config_DEPENDS_Inner} ${config_IMPORTS_Inner} ${config_LIBRARY})
     set(poker_target_depends_public ${FORCE_DEPENDS_TARGET} ${config_DEPENDS_Export} ${config_IMPORTS_Export})
 
     if (${is_interface})
-        target_link_libraries(${target_name} INTERFACE ${poker_target_depends_public})
+        target_link_libraries(${target_name} INTERFACE ${poker_target_depends_public} ${poker_target_depends_interface})
     else ()
         target_link_libraries(${target_name} PRIVATE ${poker_target_depends_private})
+        target_link_libraries(${target_name} INTERFACE ${poker_target_depends_interface})
         target_link_libraries(${target_name} PUBLIC ${poker_target_depends_public})
     endif ()
 
     # step 6: 安装该目标
-    install(FILES include/manage.h
-            DESTINATION include
-    )
-    install(TARGETS thread-manage
-            EXPORT thread-manageTarget
-            DESTINATION lib
-    )
-    install(TARGETS thread-manage_test DESTINATION bin)
 
-    install(EXPORT thread-manageTarget
-            FILE thread-manageTarget.cmake
-            DESTINATION lib/cmake/target
+    # 安装头文件
+    install(DIRECTORY include/
+            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+            FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.tpp"
     )
 
-    # step 7: 打包目标
+    # 安装二进制文件
+    install(TARGETS ${target_name}
+            EXPORT ${target_name}Target
+            LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+            RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+            INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+    )
+
+    # 安装导出文件
+    install(EXPORT ${target_name}Target
+            FILE "${target_name}Target.cmake"
+            NAMESPACE ${PROJECT_NAME}::
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
+    )
+
+    # 生成包配置文件
     include(CMakePackageConfigHelpers)
 
-    set(target_profile thread-manageTarget)
-    configure_package_config_file(${CMAKE_SOURCE_DIR}/Config.cmake.in
-            " ${CMAKE_CURRENT_BINARY_DIR}/thread-manageConfig.cmake"
-            INSTALL_DESTINATION "lib/cmake/target"
+    configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/Config.cmake.in
+            " ${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake"
+            INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
             NO_SET_AND_CHECK_MACRO
             NO_CHECK_REQUIRED_COMPONENTS_MACRO
     )
 
     write_basic_package_version_file(
-            "${CMAKE_CURRENT_BINARY_DIR}/thread-manageConfigVersion.cmake"
-            VERSION "${poker_VERSION_MAJOR}.${poker_VERSION_MINOR}"
+            "${CMAKE_CURRENT_BINARY_DIR}/${target_name}ConfigVersion.cmake"
+            VERSION "${${PROJECT_NAME}_VERSION_MAJOR}.${${PROJECT_NAME}_VERSION_MINOR}"
             COMPATIBILITY AnyNewerVersion
     )
 
+    # 安装包配置文件
     install(FILES
-            ${CMAKE_CURRENT_BINARY_DIR}/thread-manageConfig.cmake
-            ${CMAKE_CURRENT_BINARY_DIR}/thread-manageConfigVersion.cmake
-            DESTINATION lib/cmake/target
+            ${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake
+            ${CMAKE_CURRENT_BINARY_DIR}/${target_name}ConfigVersion.cmake
+            DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
     )
+
+    # step 7: 打包目标
 endfunction()

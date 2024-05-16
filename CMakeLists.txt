@@ -10,7 +10,7 @@ project(poker
 )
 
 # 引入 cmake 工具
-include(cmake/poker_add_directories.cmake)
+include(cmake/main.cmake)
 
 # 设置 c++ 标准，以及常用的编译、链接选项
 add_library(poker_compiler_flag INTERFACE)
