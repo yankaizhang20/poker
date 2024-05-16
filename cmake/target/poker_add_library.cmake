@@ -60,7 +60,10 @@ function(poker_add_library target_name)
         set(is_interface true)
     endif ()
 
+
     # 创建目标
+    list(APPEND poker_all_targets ${target_name})
+
     if (${is_interface})
         add_library(${target_name} INTERFACE)
     else ()
