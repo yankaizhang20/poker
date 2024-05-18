@@ -1,12 +1,13 @@
 ###################################################################################
-# poker_add_library(<target>
-#                   [SHARED]
-#                   [DEPENDS        <components [Inner components...] [Interface components...]>]
-#                   [IMPORTS        <components [Inner components...] [Interface components...]>]
-#                   [INCLUDE        <components [Inner components...] [Interface components...]>]
-#                   [FORCE_DEPENDS  components...]
-#                   [LIBRARY        components...]
-#                   [  SRC          components...]
+# poker_add_library( <target>
+#                    [SHARED]
+#                    [DEPENDS                <components [PRIVATE components...] [INTERFACE components...]>    ]
+#                    [IMPORTS                <components [PRIVATE components...] [INTERFACE components...]>    ]
+#                    [IMPORTS_COMPONENTS     <[package components...]...>                                    ]
+#                    [INCLUDE                <components [PRIVATE components...] [INTERFACE components...]>    ]
+#                    [FORCE_DEPENDS          components...                                                   ]
+#                    [LIBRARY                components...                                                   ]
+#                    [  SRC                  components...                                                   ]
 #                  )
 ###################################################################################
 # 头文件:  1.将 include 作为头文件默认搜索路径，并作为本 target 的使用要求，依赖本 target 的
@@ -19,15 +20,17 @@
 ###################################################################################
 # SHARED: 指定构建为动态库
 #
-# DEPENDS: 依赖本工程内的其他 target，默认将传递该依赖。通过指定 Inner 阻止依赖传递
+# DEPENDS: 依赖本工程内的其他 target，默认将传递该依赖。通过指定 PRIVATE 阻止依赖传递
 #
 # FORCE_DEPENDS: 强制链接本工程内的其他 target。不继承其使用说明
 #
-# IMPORTS: 依赖系统中的外部库，默认将传递该依赖。通过指定 Inner 组织依赖传递
+# IMPORTS: 依赖系统中的外部库，默认将传递该依赖。通过指定 PRIVATE 组织依赖传递
+#
+# IMPORTS_COMPONENTS: 指定依赖外部库的组件，使用各个第三方库的名称进行分组
 #
 # LIBRARY: 直接依赖系统中的外部库
 #
-# INCLUDE: 指定头文件搜索目录，默认传递该目录。通过指定 Inner 组织依赖传递 TODO: 导出目录在生成表达式中应为相对目录？
+# INCLUDE: 指定头文件搜索目录，默认传递该目录。通过指定 PRIVATE 组织依赖传递 TODO: 导出目录在生成表达式中应为相对目录？
 #
 # SRC: 额外添加源文件目录
 ###################################################################################
@@ -76,54 +79,54 @@ function(poker_add_library target_name)
 
     # step 4: 设置头文件搜索路径
 
-    # 解析 INCLUDE 后的 Inner、Interface参数
+    # 解析 INCLUDE 后的 PRIVATE、INTERFACE参数
     poker_split_arguments(config_INCLUDE ${config_INCLUDE})
 
     if (${is_interface})
-        # 接口模式中使用 INCLUDE Inner 为错误用法
-        if (NOT "${config_INCLUDE_Inner}" STREQUAL "")
-            message(FATAL_ERROR "shouldn't use INCLUDE with Inner in INTERFACE target!")
+        # 接口模式中使用 INCLUDE PRIVATE 为错误用法
+        if (NOT "${config_INCLUDE_Private}" STREQUAL "")
+            message(FATAL_ERROR "shouldn't use INCLUDE with PRIVATE in INTERFACE target!")
         endif ()
 
         target_include_directories(${target_name} INTERFACE
                 $<BUILD_INTERFACE:
                 ${CMAKE_CURRENT_LIST_DIR}/include>,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Export},
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Public},
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_INTERFACE}
                 $<INSTALL_INTERFACE:
                 ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Export},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Interface}>
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Public},
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_INTERFACE}>
         )
     else ()
         target_link_libraries(${target_name} PRIVATE
-                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Inner}>
+                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Private}>
         )
 
         target_include_directories(${target_name} INTERFACE
                 $<BUILD_INTERFACE:
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Interface}>
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_INTERFACE}>
                 $<INSTALL_INTERFACE:
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Interface}>
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_INTERFACE}>
         )
 
         target_include_directories(${target_name} PUBLIC
                 $<BUILD_INTERFACE:
                 ${CMAKE_CURRENT_LIST_DIR}/include,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Export}>
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Public}>
                 $<INSTALL_INTERFACE:
                 ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Export}>
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Public}>
         )
     endif ()
 
     # step 5: 添加依赖说明
 
-    # 解析 DEPENDS、IMPORTS 后的 Inner、Interface 参数
+    # 解析 DEPENDS、IMPORTS 后的 PRIVATE、INTERFACE 参数
     poker_split_arguments(config_DEPENDS ${config_DEPENDS})
     poker_split_arguments(config_IMPORTS ${config_IMPORTS})
 
-    # 为强制链接目标增加依赖项
+    # 强制链接目标
     foreach (depend ${config_FORCE_DEPENDS})
         get_target_property(target_type ${depend} TYPE)
 
@@ -138,11 +141,12 @@ function(poker_add_library target_name)
             "-Wl,--whole-archive ${FORCE_DEPENDS_TARGET_STATIC} -Wl,--no-whole-archive"
             "-Wl,--no-as-needed ${FORCE_DEPENDS_TARGET_SHARED} -Wl,--as-needed")
 
-    # TODO 为导入目标增加依赖项
+    # 外部依赖
+    poker_find_packages(${config_IMPORTS_ALL} COMPONENTS ${config_IMPORTS_COMPONENTS} AS import_results)
 
     # 整合各个链接项，完成依赖传递
-    set(poker_target_depends_interface ${config_DEPENDS_Interface} ${config_IMPORTS_Interface})
-    set(poker_target_depends_private ${config_DEPENDS_Inner} ${config_IMPORTS_Inner} ${config_LIBRARY})
+    set(poker_target_depends_interface ${config_DEPENDS_INTERFACE} ${config_IMPORTS_INTERFACE})
+    set(poker_target_depends_private ${config_DEPENDS_PRIVATE} ${config_IMPORTS_PRIVATE} ${config_LIBRARY})
     set(poker_target_depends_public ${FORCE_DEPENDS_TARGET} ${config_DEPENDS_Export} ${config_IMPORTS_Export})
 
     if (${is_interface})

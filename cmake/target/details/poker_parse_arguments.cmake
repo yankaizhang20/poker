@@ -10,6 +10,7 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
             'DEPENDS'
             'FORCE_DEPENDS'
             'IMPORTS'
+            'IMPORTS_COMPONENTS'
             'LIBRARY'
             'INCLUDE'
             'SRC'
@@ -29,9 +30,11 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
     endif ()
 endmacro()
 
-# 区分参数中的 Inner Interface 参数
+# 区分参数中的 PUBLIC PRIVATE INTERFACE 参数，并提供囊括所有类型参数
 macro(poker_split_arguments prefix)
-    cmake_parse_arguments(${prefix} "" "" "Inner;Interface" ${ARGN})
+    cmake_parse_arguments(${prefix} "" "" "PRIVATE;INTERFACE" ${ARGN})
 
-    set(${prefix}_Export "${${prefix}_UNPARSED_ARGUMENTS}")
+    set(${prefix}_PUBLIC "${${prefix}_UNPARSED_ARGUMENTS}")
+
+    set(${prefix_ALL} ${${prefix}_PUBLIC} ${${prefix}_PRIVATE} ${${prefix}_INTERFACE})
 endmacro()
