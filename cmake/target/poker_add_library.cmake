@@ -1,13 +1,14 @@
 ###################################################################################
 # poker_add_library( <target>
 #                    [SHARED]
-#                    [DEPENDS                <components [PRIVATE components...] [INTERFACE components...]>    ]
-#                    [IMPORTS                <components [PRIVATE components...] [INTERFACE components...]>    ]
-#                    [IMPORTS_COMPONENTS     <[package components...]...>                                    ]
-#                    [INCLUDE                <components [PRIVATE components...] [INTERFACE components...]>    ]
-#                    [FORCE_DEPENDS          components...                                                   ]
-#                    [LIBRARY                components...                                                   ]
-#                    [  SRC                  components...                                                   ]
+#                    [DEPENDS                target ... [PRIVATE target ...] [INTERFACE target ...] ]
+#                    [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
+#                    [IMPORTS_COMPONENTS     <package component ...> ... ]
+#                    [IMPORTS_AS             <package|component imported-target> ... ]
+#                    [INCLUDE                <dir ... [PRIVATE dir ...] [INTERFACE dir ...]> ]
+#                    [FORCE_DEPENDS          target ... ]
+#                    [LIBRARY                library ... ]
+#                    [  SRC                  dir ... ]
 #                  )
 ###################################################################################
 # 头文件:  1.将 include 作为头文件默认搜索路径，并作为本 target 的使用要求，依赖本 target 的
@@ -27,6 +28,8 @@
 # IMPORTS: 依赖系统中的外部库，默认将传递该依赖。通过指定 PRIVATE 组织依赖传递
 #
 # IMPORTS_COMPONENTS: 指定依赖外部库的组件，使用各个第三方库的名称进行分组
+#
+# IMPORTS_AS: 指定外部库的导入目标
 #
 # LIBRARY: 直接依赖系统中的外部库
 #

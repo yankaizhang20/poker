@@ -11,6 +11,7 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
             'FORCE_DEPENDS'
             'IMPORTS'
             'IMPORTS_COMPONENTS'
+            'IMPORTS_AS'
             'LIBRARY'
             'INCLUDE'
             'SRC'
