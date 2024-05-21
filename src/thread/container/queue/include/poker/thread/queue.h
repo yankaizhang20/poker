@@ -139,7 +139,7 @@ namespace poker::thread
 
             while (cur and another_cur)
             {
-                cur =
+                //                cur =
             }
         }
 
