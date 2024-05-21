@@ -25,13 +25,5 @@ poker_add_subdirectories(src)
 # 实验
 poker_add_subdirectories(test)
 
-# distribute
-set(CPACK_GENERATOR "DEB")
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "POKER")
-set(CPACK_DEBIAN_PACKAGE_DESCRIPTION "POKER IS A BASE C++ LIBRARY")
-set(CPACK_DEBIAN_PACKAGE_VERSION_MAJOR "${poker_VERSION_MAJOR}")
-set(CPACK_DEBIAN_PACKAGE_VERSION_MINOR "${poker_VERSION_MINOR}")
-set(CPACK_DEBIAN_FILE_NAME DEB-DEFAULT)
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.3.1-6), libc6 (<< 3)")
-include(CPack)
 
+poker_finish_project()

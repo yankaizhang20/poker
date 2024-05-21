@@ -45,27 +45,25 @@ function(poker_add_library target_name)
     poker_parse_arguments(config "SHARED" "" "" ${ARGN})
 
     # step 2: 添加本目标的源文件
-    set(poker_target_sources)
 
     # 查看 src 目录下的同名目录、SRC 指定的目录
     if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
         list(APPEND config_SRC ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
     endif ()
 
-    if (EXISTS ${config_SRC})
-        foreach (src_dir ${config_SRC})
-            file(GLOB_RECURSE poker_target_sources "${src_dir}/*.cpp;${src_dir}/*.cc")
-        endforeach ()
-    endif ()
+    foreach (src_dir ${config_SRC})
+        if (EXISTS ${src_dir})
+            file(GLOB_RECURSE target_sources ${src_dir}/*.cpp ${src_dir}/*.cc)
+        endif ()
+    endforeach ()
 
     # step 3: 创建目标
 
     # 判断是否为接口模式
     set(is_interface false)
-    if ("${poker_target_sources}" STREQUAL "")
+    if ("${target_sources}" STREQUAL "")
         set(is_interface true)
     endif ()
-
 
     # 创建目标
     list(APPEND poker_all_targets ${target_name})
@@ -73,37 +71,41 @@ function(poker_add_library target_name)
     if (${is_interface})
         add_library(${target_name} INTERFACE)
     else ()
-        if ("${config_SHARED}" STREQUAL "")
-            add_library(${target_name} SHARED ${poker_target_sources})
+        if ("${config_SHARED}")
+            add_library(${target_name} SHARED ${target_sources})
         else ()
-            add_library(${target_name} ${poker_target_sources})
+            add_library(${target_name} ${target_sources})
         endif ()
     endif ()
 
     # step 4: 设置头文件搜索路径
 
     # 解析 INCLUDE 后的 PRIVATE、INTERFACE参数
-    poker_split_arguments(config_INCLUDE ${config_INCLUDE})
+    if (NOT "${ARGN}" STREQUAL "")
+        poker_split_arguments(config_INCLUDE ${config_INCLUDE})
+    endif ()
 
     if (${is_interface})
         # 接口模式中使用 INCLUDE PRIVATE 为错误用法
-        if (NOT "${config_INCLUDE_Private}" STREQUAL "")
+        if (NOT "${config_INCLUDE_PRIVATE}" STREQUAL "")
             message(FATAL_ERROR "shouldn't use INCLUDE with PRIVATE in INTERFACE target!")
         endif ()
 
         target_include_directories(${target_name} INTERFACE
                 $<BUILD_INTERFACE:
                 ${CMAKE_CURRENT_LIST_DIR}/include>,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Public},
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PUBLIC},
                 ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_INTERFACE}
                 $<INSTALL_INTERFACE:
                 ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Public},
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_PUBLIC},
                 ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_INTERFACE}>
         )
     else ()
-        target_link_libraries(${target_name} PRIVATE
-                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Private}>
+        message(STATUS ${CMAKE_INSTALL_INCLUDEDIR})
+
+        target_include_directories(${target_name} PRIVATE
+                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PRIVATE}>
         )
 
         target_include_directories(${target_name} INTERFACE
@@ -116,10 +118,10 @@ function(poker_add_library target_name)
         target_include_directories(${target_name} PUBLIC
                 $<BUILD_INTERFACE:
                 ${CMAKE_CURRENT_LIST_DIR}/include,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_Public}>
+                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PUBLIC}>
                 $<INSTALL_INTERFACE:
                 ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_Public}>
+                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_PUBLIC}>
         )
     endif ()
 
@@ -130,58 +132,62 @@ function(poker_add_library target_name)
     poker_split_arguments(config_IMPORTS ${config_IMPORTS})
 
     # step 5.1: 强制链接目标
-    foreach (depend "${config_FORCE_DEPENDS}")
-        get_target_property(target_type "${depend}" TYPE)
+    if (NOT "${config_FORCE_DEPENDS}" STREQUAL "")
+        foreach (depend "${config_FORCE_DEPENDS}")
+            get_target_property(target_type "${depend}" TYPE)
 
-        if (target_type STREQUAL STATIC_LIBRARY)
-            list(APPEND target_link-force-STATIC ${depend})
-        else ()
-            list(APPEND target_link-force-SHARED ${depend})
-        endif ()
-    endforeach ()
+            if (target_type STREQUAL STATIC_LIBRARY)
+                list(APPEND target_link-force-STATIC ${depend})
+            else ()
+                list(APPEND target_link-force-SHARED ${depend})
+            endif ()
+        endforeach ()
 
-    set(target_link-force
-            "-Wl,--whole-archive " ${target_link-force-STATIC}" -Wl,--no-whole-archive"
-            "-Wl,--no-as-needed " ${target_link-force-SHARED}" -Wl,--as-needed")
-
-    # step 5.2: 外部依赖
-    poker_find_packages("${config_IMPORTS_ALL}" COMPONENTS "${config_IMPORTS_COMPONENTS}")
-
-    # 通过变量导入外部依赖
-    foreach (${package} ${config_IMPORTS_INTERFACE})
-        list(APPEND target_include-INTERFACE ${package}_INCLUDE_DIRS)
-        list(APPEND target_link-imported-INTERFACE ${package}_LIBRARIES)
-    endforeach ()
-
-    foreach (package ${config_IMPORTS_PRIVATE})
-        list(APPEND target_include-PRIVATE ${package}_INCLUDE_DIRS)
-        list(APPEND target_link-imported-PRIVATE ${package}_LIBRARIES)
-    endforeach ()
-
-    foreach (package ${config_IMPORTS_PUBLIC})
-        list(APPEND target_include-PUBLIC ${package}_INCLUDE_DIRS)
-        list(APPEND target_link-imported-PUBLIC ${package}_LIBRARIES)
-    endforeach ()
-
-    # 通过导入目标导入
-    cmake_parse_arguments(imported_target "" "" "${config_IMPORTS_ALL}" ${config_IMPORTS_AS})
-
-    # 仅可提供要求查找包的导入目标
-    if (NOT "${imported_target_UNPARSED_ARGUMENTS}" STREQUAL "")
-        message(FATAL_ERROR "Incorrect package was name provided while specifying imported！")
+        set(target_link-force
+                "-Wl,--whole-archive " ${target_link-force-STATIC}" -Wl,--no-whole-archive"
+                "-Wl,--no-as-needed " ${target_link-force-SHARED}" -Wl,--as-needed")
     endif ()
 
-    foreach (package ${config_IMPORTS_ALL})
-        if (NOT "${imported_target_${package}}" STREQUAL "")
-            if (${package} IN_LIST config_IMPORTS_INTERFACE)
-                list(APPEND target_link-imported-INTERFACE ${imported_target_${package}})
-            elseif (${package} IN_LIST config_IMPORTS_PRIVATE)
-                list(APPEND target_link-imported-PRIVATE ${imported_target_${package}})
-            else ()
-                list(APPEND target_link-imported-PUBLIC ${imported_target_${package}})
-            endif ()
+    # step 5.2: 外部依赖
+    if (NOT "${config_IMPORTS_ALL}" STREQUAL "")
+        poker_find_packages("${config_IMPORTS_ALL}" COMPONENTS "${config_IMPORTS_COMPONENTS}")
+
+        # 通过变量导入外部依赖
+        foreach (${package} "${config_IMPORTS_INTERFACE}")
+            list(APPEND target_include-INTERFACE ${package}_INCLUDE_DIRS)
+            list(APPEND target_link-imported-INTERFACE ${package}_LIBRARIES)
+        endforeach ()
+
+        foreach (package "${config_IMPORTS_PRIVATE}")
+            list(APPEND target_include-PRIVATE ${package}_INCLUDE_DIRS)
+            list(APPEND target_link-imported-PRIVATE ${package}_LIBRARIES)
+        endforeach ()
+
+        foreach (package "${config_IMPORTS_PUBLIC}")
+            list(APPEND target_include-PUBLIC ${package}_INCLUDE_DIRS)
+            list(APPEND target_link-imported-PUBLIC ${package}_LIBRARIES)
+        endforeach ()
+
+        # 通过导入目标导入
+        cmake_parse_arguments(imported_target "" "" "${config_IMPORTS_ALL}" ${config_IMPORTS_AS})
+
+        # 仅可提供要求查找包的导入目标
+        if (NOT "${imported_target_UNPARSED_ARGUMENTS}" STREQUAL "")
+            message(FATAL_ERROR "Incorrect package was name provided while specifying imported！")
         endif ()
-    endforeach ()
+
+        foreach (package ${config_IMPORTS_ALL})
+            if (NOT "${imported_target_${package}}" STREQUAL "")
+                if (${package} IN_LIST config_IMPORTS_INTERFACE)
+                    list(APPEND target_link-imported-INTERFACE ${imported_target_${package}})
+                elseif (${package} IN_LIST config_IMPORTS_PRIVATE)
+                    list(APPEND target_link-imported-PRIVATE ${imported_target_${package}})
+                else ()
+                    list(APPEND target_link-imported-PUBLIC ${imported_target_${package}})
+                endif ()
+            endif ()
+        endforeach ()
+    endif ()
 
     # step 5.3: 整合各个链接项，完成依赖传递
     set(target_link_interface_all
@@ -245,7 +251,7 @@ function(poker_add_library target_name)
     # 生成包配置文件
     include(CMakePackageConfigHelpers)
 
-    configure_package_config_file(${CMAKE_CURRENT_LIST_DIR}/Config.cmake.in
+    configure_package_config_file(${poker_template_dir}/package_config.cmake
             " ${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake"
             INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
             NO_SET_AND_CHECK_MACRO
@@ -264,6 +270,4 @@ function(poker_add_library target_name)
             ${CMAKE_CURRENT_BINARY_DIR}/${target_name}ConfigVersion.cmake
             DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
     )
-
-    # step 7: 打包目标
 endfunction()

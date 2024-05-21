@@ -10,3 +10,6 @@ endfunction()
 # 收集所有功能
 collect_tools_of(${CMAKE_CURRENT_LIST_DIR}/project)
 collect_tools_of(${CMAKE_CURRENT_LIST_DIR}/target)
+
+# 模板目录
+set(poker_template_dir ${CMAKE_CURRENT_LIST_DIR}/template)

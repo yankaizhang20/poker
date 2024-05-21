@@ -2,7 +2,7 @@
 // Created by zyk on 24-1-15.
 //
 #include <iostream>
-#include "manage.h"
+#include "poker/thread/manage.h"
 
 void Func(int begin, int end)
 {

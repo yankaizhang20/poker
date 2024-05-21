@@ -7,14 +7,14 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
 
     list(APPEND multi_value_keywords_
             ${multi_value_keywords}
-            'DEPENDS'
-            'FORCE_DEPENDS'
-            'IMPORTS'
-            'IMPORTS_COMPONENTS'
-            'IMPORTS_AS'
-            'LIBRARY'
-            'INCLUDE'
-            'SRC'
+            DEPENDS
+            FORCE_DEPENDS
+            IMPORTS
+            IMPORTS_COMPONENTS
+            IMPORTS_AS
+            LIBRARY
+            INCLUDE
+            SRC
     )
 
     # 去除重复
@@ -23,11 +23,11 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
     list(REMOVE_DUPLICATES multi_value_keywords_)
 
     # 解析位置参数
-    cmake_parse_arguments(${prefix} ${options} ${one_value_keywords} ${multi_value_keywords} ${ARGN})
+    cmake_parse_arguments("${prefix}" "${options_}" "${one_value_keywords_}" "${multi_value_keywords_}" ${ARGN})
 
     # 若有未知的参数，给出提示
-    if (NOT "${prefix}_UNPARSED_ARGUMENTS" STREQUAL "")
-        message(FATAL_ERROR "unknown arguments: ${prefix}_UNPARSED_ARGUMENTS")
+    if (NOT "${${prefix}_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "unknown arguments: ${${prefix}_UNPARSED_ARGUMENTS}")
     endif ()
 endmacro()
 
@@ -37,5 +37,5 @@ macro(poker_split_arguments prefix)
 
     set(${prefix}_PUBLIC "${${prefix}_UNPARSED_ARGUMENTS}")
 
-    set(${prefix_ALL} ${${prefix}_PUBLIC} ${${prefix}_PRIVATE} ${${prefix}_INTERFACE})
+    set(${prefix}_ALL ${${prefix}_PUBLIC} ${${prefix}_PRIVATE} ${${prefix}_INTERFACE})
 endmacro()
