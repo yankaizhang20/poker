@@ -4,7 +4,7 @@
 #                    [DEPENDS                target ... [PRIVATE target ...] [INTERFACE target ...] ]
 #                    [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
 #                    [IMPORTS_COMPONENTS     <package component ...> ... ]
-#                    [IMPORTS_AS             <package|component imported-target> ... ]
+#                    [IMPORTS_AS             <package imported-target ...> ... ]
 #                    [INCLUDE                <dir ... [PRIVATE dir ...] [INTERFACE dir ...]> ]
 #                    [FORCE_DEPENDS          target ... ]
 #                    [LIBRARY                library ... ]
@@ -129,35 +129,93 @@ function(poker_add_library target_name)
     poker_split_arguments(config_DEPENDS ${config_DEPENDS})
     poker_split_arguments(config_IMPORTS ${config_IMPORTS})
 
-    # 强制链接目标
-    foreach (depend ${config_FORCE_DEPENDS})
-        get_target_property(target_type ${depend} TYPE)
+    # step 5.1: 强制链接目标
+    foreach (depend "${config_FORCE_DEPENDS}")
+        get_target_property(target_type "${depend}" TYPE)
 
         if (target_type STREQUAL STATIC_LIBRARY)
-            list(APPEND FORCE_DEPENDS_TARGET_STATIC ${depend})
+            list(APPEND target_link-force-STATIC ${depend})
         else ()
-            list(APPEND FORCE_DEPENDS_TARGET_SHARED ${depend})
+            list(APPEND target_link-force-SHARED ${depend})
         endif ()
     endforeach ()
 
-    set(FORCE_DEPENDS_TARGET
-            "-Wl,--whole-archive ${FORCE_DEPENDS_TARGET_STATIC} -Wl,--no-whole-archive"
-            "-Wl,--no-as-needed ${FORCE_DEPENDS_TARGET_SHARED} -Wl,--as-needed")
+    set(target_link-force
+            "-Wl,--whole-archive " ${target_link-force-STATIC}" -Wl,--no-whole-archive"
+            "-Wl,--no-as-needed " ${target_link-force-SHARED}" -Wl,--as-needed")
 
-    # 外部依赖
-    poker_find_packages(${config_IMPORTS_ALL} COMPONENTS ${config_IMPORTS_COMPONENTS} AS import_results)
+    # step 5.2: 外部依赖
+    poker_find_packages("${config_IMPORTS_ALL}" COMPONENTS "${config_IMPORTS_COMPONENTS}")
 
-    # 整合各个链接项，完成依赖传递
-    set(poker_target_depends_interface ${config_DEPENDS_INTERFACE} ${config_IMPORTS_INTERFACE})
-    set(poker_target_depends_private ${config_DEPENDS_PRIVATE} ${config_IMPORTS_PRIVATE} ${config_LIBRARY})
-    set(poker_target_depends_public ${FORCE_DEPENDS_TARGET} ${config_DEPENDS_Export} ${config_IMPORTS_Export})
+    # 通过变量导入外部依赖
+    foreach (${package} ${config_IMPORTS_INTERFACE})
+        list(APPEND target_include-INTERFACE ${package}_INCLUDE_DIRS)
+        list(APPEND target_link-imported-INTERFACE ${package}_LIBRARIES)
+    endforeach ()
+
+    foreach (package ${config_IMPORTS_PRIVATE})
+        list(APPEND target_include-PRIVATE ${package}_INCLUDE_DIRS)
+        list(APPEND target_link-imported-PRIVATE ${package}_LIBRARIES)
+    endforeach ()
+
+    foreach (package ${config_IMPORTS_PUBLIC})
+        list(APPEND target_include-PUBLIC ${package}_INCLUDE_DIRS)
+        list(APPEND target_link-imported-PUBLIC ${package}_LIBRARIES)
+    endforeach ()
+
+    # 通过导入目标导入
+    cmake_parse_arguments(imported_target "" "" "${config_IMPORTS_ALL}" ${config_IMPORTS_AS})
+
+    # 仅可提供要求查找包的导入目标
+    if (NOT "${imported_target_UNPARSED_ARGUMENTS}" STREQUAL "")
+        message(FATAL_ERROR "Incorrect package was name provided while specifying imported！")
+    endif ()
+
+    foreach (package ${config_IMPORTS_ALL})
+        if (NOT "${imported_target_${package}}" STREQUAL "")
+            if (${package} IN_LIST config_IMPORTS_INTERFACE)
+                list(APPEND target_link-imported-INTERFACE ${imported_target_${package}})
+            elseif (${package} IN_LIST config_IMPORTS_PRIVATE)
+                list(APPEND target_link-imported-PRIVATE ${imported_target_${package}})
+            else ()
+                list(APPEND target_link-imported-PUBLIC ${imported_target_${package}})
+            endif ()
+        endif ()
+    endforeach ()
+
+    # step 5.3: 整合各个链接项，完成依赖传递
+    set(target_link_interface_all
+            ${config_DEPENDS_INTERFACE}
+            ${target_link-imported-INTERFACE}
+    )
+    set(target_link_private_all
+            ${target_link-force}
+            ${config_DEPENDS_PRIVATE}
+            ${target_link-imported-PRIVATE}
+            ${config_LIBRARY}
+    )
+    set(target_link_public_all
+            ${config_DEPENDS_PUBLIC}
+            ${target_link-imported-PUBLIC}
+    )
 
     if (${is_interface})
-        target_link_libraries(${target_name} INTERFACE ${poker_target_depends_public} ${poker_target_depends_interface})
+        if (NOT "${target_link_private_all}" STREQUAL "")
+            message(FATAL_ERROR " Interface targets cannot have private dependencies！ ")
+        endif ()
+
+        target_link_libraries(${target_name} INTERFACE
+                ${target_link_public_all}
+                ${target_link_interface_all}
+        )
     else ()
-        target_link_libraries(${target_name} PRIVATE ${poker_target_depends_private})
-        target_link_libraries(${target_name} INTERFACE ${poker_target_depends_interface})
-        target_link_libraries(${target_name} PUBLIC ${poker_target_depends_public})
+        target_include_directories(${target_name} INTERFACE ${target_include-INTERFACE})
+        target_include_directories(${target_name} PRIVATE ${target_include-PRIVATE})
+        target_include_directories(${target_name} PUBLIC ${target_include-PUBLIC})
+
+        target_link_libraries(${target_name} PRIVATE ${target_link_private_all})
+        target_link_libraries(${target_name} INTERFACE ${target_link_interface_all})
+        target_link_libraries(${target_name} PUBLIC ${target_link_public_all})
     endif ()
 
     # step 6: 安装该目标

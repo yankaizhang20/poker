@@ -45,11 +45,11 @@ macro(poker_find_packages)
     endif ()
 
     # 依次查找所有包
-    foreach (package ${poker_find_packages-packages})
-        if (${components_${package}} STREQUAL "")
-            find_package(${package} REQUIRED)
+    foreach (package "${poker_find_packages-packages}")
+        if ("${components_${package}}" STREQUAL "")
+            find_package("${package}" REQUIRED)
         else ()
-            find_package(${package} REQUIRED COMPONENTS ${components_${package}})
+            find_package("${package}" REQUIRED COMPONENTS "${components_${package}}")
         endif ()
     endforeach ()
 
