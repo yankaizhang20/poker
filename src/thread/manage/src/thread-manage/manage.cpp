@@ -2,7 +2,7 @@
 // Created by zyk on 24-4-15.
 //
 #include <iostream>
-#include "hierarchical_mutex.h"
+#include "poker/thread/hierarchical_mutex.h"
 
 namespace poker::thread::manage
 {

@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <poker/AutoComponent.h>
+#include <poker/system/AutoComponent.h>
 
 
 namespace poker

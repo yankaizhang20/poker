@@ -4,7 +4,7 @@
 
 #include <poker/pattern/singleton.h>
 
-#include "poker/AutoComponent.h"
+#include "poker/system/AutoComponent.h"
 
 
 namespace poker
