@@ -91,38 +91,61 @@ function(poker_add_library target_name)
             message(FATAL_ERROR "shouldn't use INCLUDE with PRIVATE in INTERFACE target!")
         endif ()
 
-        target_include_directories(${target_name} INTERFACE
-                $<BUILD_INTERFACE:
-                ${CMAKE_CURRENT_LIST_DIR}/include>,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PUBLIC},
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_INTERFACE}
-                $<INSTALL_INTERFACE:
-                ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_PUBLIC},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_INTERFACE}>
-        )
+        # INCLUDE 指定的位置
+        foreach (inc_dir ${config_INCLUDE_PUBLIC} ${config_INCLUDE_INTERFACE})
+            list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
+            list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+        endforeach ()
+
+        # 当前处理的 list 文件所在目录下的 include 目录
+        list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
+        list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+
+        if (NOT ${interface_target_build_include} STREQUAL "")
+            target_include_directories(${target_name} INTERFACE
+                    "$<BUILD_INTERFACE:${interface_target_build_include}>"
+                    "$<INSTALL_INTERFACE:${interface_target_install_include}>"
+            )
+        endif ()
     else ()
-        message(STATUS ${CMAKE_INSTALL_INCLUDEDIR})
+        # INCLUDE 指定的位置
+        foreach (inc_dir ${config_INCLUDE_PRIVATE})
+            list(APPEND target_private_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
+        endforeach ()
 
-        target_include_directories(${target_name} PRIVATE
-                $<BUILD_INTERFACE: ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PRIVATE}>
-        )
+        foreach (inc_dir ${config_INCLUDE_INTERFACE})
+            list(APPEND target_interface_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
+            list(APPEND target_interface_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+        endforeach ()
 
-        target_include_directories(${target_name} INTERFACE
-                $<BUILD_INTERFACE:
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_INTERFACE}>
-                $<INSTALL_INTERFACE:
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_INTERFACE}>
-        )
+        foreach (inc_dir ${config_INCLUDE_PUBLIC})
+            list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
+            list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+        endforeach ()
 
-        target_include_directories(${target_name} PUBLIC
-                $<BUILD_INTERFACE:
-                ${CMAKE_CURRENT_LIST_DIR}/include,
-                ${CMAKE_CURRENT_LIST_DIR}/${config_INCLUDE_PUBLIC}>
-                $<INSTALL_INTERFACE:
-                ${CMAKE_INSTALL_INCLUDEDIR},
-                ${CMAKE_INSTALL_INCLUDEDIR}/${config_INCLUDE_PUBLIC}>
-        )
+        # 当前处理的 list 文件所在目录下的 include 目录
+        list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
+        list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+
+        if (NOT "${target_private_build_include}" STREQUAL "")
+            target_include_directories(${target_name} PRIVATE
+                    "$<BUILD_INTERFACE:${target_private_build_include}>"
+            )
+        endif ()
+
+        if (NOT "${target_interface_build_include}" STREQUAL "")
+            target_include_directories(${target_name} INTERFACE
+                    "$<BUILD_INTERFACE:${target_interface_build_include}>"
+                    "$<INSTALL_INTERFACE:${target_interface_install_include}>"
+            )
+        endif ()
+
+        if (NOT "${target_public_build_include}" STREQUAL "")
+            target_include_directories(${target_name} PUBLIC
+                    "$<BUILD_INTERFACE:${target_public_build_include}>"
+                    "$<INSTALL_INTERFACE:${target_public_install_include}>"
+            )
+        endif ()
     endif ()
 
     # step 5: 添加依赖说明
@@ -133,7 +156,7 @@ function(poker_add_library target_name)
 
     # step 5.1: 强制链接目标
     if (NOT "${config_FORCE_DEPENDS}" STREQUAL "")
-        foreach (depend "${config_FORCE_DEPENDS}")
+        foreach (depend ${config_FORCE_DEPENDS})
             get_target_property(target_type "${depend}" TYPE)
 
             if (target_type STREQUAL STATIC_LIBRARY)
@@ -153,17 +176,17 @@ function(poker_add_library target_name)
         poker_find_packages("${config_IMPORTS_ALL}" COMPONENTS "${config_IMPORTS_COMPONENTS}")
 
         # 通过变量导入外部依赖
-        foreach (${package} "${config_IMPORTS_INTERFACE}")
+        foreach (${package} ${config_IMPORTS_INTERFACE})
             list(APPEND target_include-INTERFACE ${package}_INCLUDE_DIRS)
             list(APPEND target_link-imported-INTERFACE ${package}_LIBRARIES)
         endforeach ()
 
-        foreach (package "${config_IMPORTS_PRIVATE}")
+        foreach (package ${config_IMPORTS_PRIVATE})
             list(APPEND target_include-PRIVATE ${package}_INCLUDE_DIRS)
             list(APPEND target_link-imported-PRIVATE ${package}_LIBRARIES)
         endforeach ()
 
-        foreach (package "${config_IMPORTS_PUBLIC}")
+        foreach (package ${config_IMPORTS_PUBLIC})
             list(APPEND target_include-PUBLIC ${package}_INCLUDE_DIRS)
             list(APPEND target_link-imported-PUBLIC ${package}_LIBRARIES)
         endforeach ()
@@ -203,6 +226,7 @@ function(poker_add_library target_name)
     set(target_link_public_all
             ${config_DEPENDS_PUBLIC}
             ${target_link-imported-PUBLIC}
+            poker_compiler_flag
     )
 
     if (${is_interface})
