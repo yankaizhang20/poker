@@ -276,7 +276,7 @@ function(poker_add_library target_name)
     include(CMakePackageConfigHelpers)
 
     configure_package_config_file(${poker_template_dir}/package_config.cmake
-            " ${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake"
+            "${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake"
             INSTALL_DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/${target_name}"
             NO_SET_AND_CHECK_MACRO
             NO_CHECK_REQUIRED_COMPONENTS_MACRO
