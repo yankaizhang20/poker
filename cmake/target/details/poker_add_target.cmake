@@ -3,9 +3,39 @@ function(poker_add_target target_name target_type)
 
     # step 1: 添加本目标的源文件
 
-    # 查看 src 目录下的同名目录、SRC 指定的目录
-    if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
-        list(APPEND config_SRC ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
+    # 指定各类型目标的默认源文件位置
+    set(target_type_for_src "executable" "library")
+
+    if ("${target_type}" IN_LIST target_type_for_src)
+        # 添加 src 目录下的同名目录
+        if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
+            list(APPEND config_SRC ${CMAKE_CURRENT_LIST_DIR}/src/${target_name})
+        endif ()
+
+    elseif ("${target_type}" STREQUAL "test")
+        # 若为测试目标，则修改 target 名
+
+        # 被测目标名
+        set(target_tested_name ${target_name})
+        # 测试目标默认源文件目录
+        set(target_src_name ${target_name})
+        # 测试目标名
+        set(target_name ${target_name}-TEST)
+
+        # 若指定 CASE 则，添加进目标名
+        if (NOT "${config_CASE}" STREQUAL "")
+            set(target_name ${target_name}-${config_CASE})
+            set(target_src_name ${target_src_name}-${config_CASE})
+        endif ()
+
+        # 添加 test 目录下的同名目录
+        if (EXISTS ${CMAKE_CURRENT_LIST_DIR}/test/${target_src_name})
+            list(APPEND config_SRC ${CMAKE_CURRENT_LIST_DIR}/test/${target_src_name})
+        endif ()
+
+    else ()
+        message(FATAL_ERROR "undefined target type")
+
     endif ()
 
     foreach (src_dir ${config_SRC})
@@ -22,13 +52,19 @@ function(poker_add_target target_name target_type)
         set(is_interface true)
     endif ()
 
-    if ("${target_type}" STREQUAL "executable")
+    set(target_type_for_executable "executable" "test")
+    if ("${target_type}" IN_LIST target_type_for_executable)
         # 构建可执行目标时没有提供源文件
         if (${is_interface})
             message(FATAL_ERROR "No source file is provided for executable target！")
         endif ()
 
         add_executable(${target_name} ${target_sources})
+
+        # 若为测试目标，默认链接同名 target
+        if (TARGET ${target_tested_name})
+            target_link_libraries(${target_name} PRIVATE ${target_tested_name})
+        endif ()
 
         list(APPEND poker_all_targets ${target_name})
 
