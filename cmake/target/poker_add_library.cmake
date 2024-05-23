@@ -8,7 +8,7 @@
 #                    [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
 #                    [IMPORTS_COMPONENTS     <package component ...> ... ]
 #                    [IMPORTS_AS             <package imported-target ...> ... ]
-#                    [INCLUDE                <dir ... [PRIVATE dir ...] [INTERFACE dir ...]> ]
+#                    [INCLUDE                dir ... ]
 #                    [LIBRARY                library ... ]
 #                  )
 ##################################################################################################################################
@@ -35,7 +35,7 @@
 #
 # LIBRARY: 直接依赖系统中的外部库
 #
-# INCLUDE: 指定头文件搜索目录，默认传递该目录。通过指定 PRIVATE 组织依赖传递
+# INCLUDE: 指定头文件搜索目录，仅可使用绝对目录。仅作为私有依赖
 #
 ##################################################################################################################################
 
@@ -81,26 +81,37 @@ function(poker_add_library target_name)
 
     # step 4: 设置头文件搜索路径
 
-    # 解析 INCLUDE 后的 PRIVATE、INTERFACE参数
-    if (NOT "${ARGN}" STREQUAL "")
-        poker_split_arguments(config_INCLUDE ${config_INCLUDE})
+    # 检查 INCLUDE 标签是否为绝对目录
+    foreach (inc ${config_INCLUDE})
+        cmake_path(IS_ABSOLUTE ${inc} is_absolute_inc)
+
+        if (not "${is_absolute_inc}")
+            message(FATAL_ERROR "Only absolute paths can be specified after INCLUDE！ Error path: ${inc}")
+        endif ()
+    endforeach ()
+
+    # 添加当前处理的 List 文件下的 include 目录
+    set(default_include_dir "include")
+    if (EXISTS "${CMAKE_CURRENT_LIST_DIR}/${default_include_dir}" AND NOT "${default_include_dir}" IN_LIST config_INC)
+        list(APPEND config_INC "${default_include_dir}")
     endif ()
 
     if (${is_interface})
-        # 接口模式中使用 INCLUDE PRIVATE 为错误用法
-        if (NOT "${config_INCLUDE_PRIVATE}" STREQUAL "")
-            message(FATAL_ERROR "shouldn't use INCLUDE with PRIVATE in INTERFACE target!")
+        # 接口模式中使用 INCLUDE 标签为错误用法
+        if (NOT "${config_INCLUDE}" STREQUAL "")
+            message(FATAL_ERROR "shouldn't use INCLUDE in INTERFACE target!")
         endif ()
 
-        # INCLUDE 指定的位置
-        foreach (inc_dir ${config_INC} ${config_INCLUDE_PUBLIC} ${config_INCLUDE_INTERFACE})
+        # INC 指定的该 target 自带的头文件位置
+        foreach (inc_dir ${config_INC})
             list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
-            list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
-        endforeach ()
 
-        # 当前处理的 list 文件所在目录下的 include 目录
-        list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
-        list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+            if ("${inc_dir}" STREQUAL include)
+                list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+            else ()
+                list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+            endif ()
+        endforeach ()
 
         list(REMOVE_DUPLICATES interface_target_build_include)
         list(REMOVE_DUPLICATES interface_target_install_include)
@@ -112,41 +123,29 @@ function(poker_add_library target_name)
             )
         endif ()
     else ()
-        # INCLUDE 指定的位置
-        foreach (inc_dir ${config_INCLUDE_PRIVATE})
-            list(APPEND target_private_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
-        endforeach ()
-
-        foreach (inc_dir ${config_INCLUDE_INTERFACE})
-            list(APPEND target_interface_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
-            list(APPEND target_interface_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
-        endforeach ()
-
-        foreach (inc_dir ${config_INC} ${config_INCLUDE_PUBLIC})
+        # INC 指定的该 target 自带的头文件位置
+        foreach (inc_dir ${config_INC})
             list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
-            list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+
+            if ("${inc_dir}" STREQUAL include)
+                list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+            else ()
+                list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
+            endif ()
         endforeach ()
 
-        # 当前处理的 list 文件所在目录下的 include 目录
-        list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
-        list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+        # INCLUDE 指定的该 target 依赖的头文件位置
+        foreach (inc_dir ${config_INCLUDE})
+            list(APPEND target_private_build_include "${inc_dir}")
+        endforeach ()
 
         list(REMOVE_DUPLICATES target_private_build_include)
-        list(REMOVE_DUPLICATES target_interface_build_include)
-        list(REMOVE_DUPLICATES target_interface_install_include)
         list(REMOVE_DUPLICATES target_public_build_include)
         list(REMOVE_DUPLICATES target_public_install_include)
 
         if (NOT "${target_private_build_include}" STREQUAL "")
             target_include_directories(${target_name} PRIVATE
                     "$<BUILD_INTERFACE:${target_private_build_include}>"
-            )
-        endif ()
-
-        if (NOT "${target_interface_build_include}" STREQUAL "")
-            target_include_directories(${target_name} INTERFACE
-                    "$<BUILD_INTERFACE:${target_interface_build_include}>"
-                    "$<INSTALL_INTERFACE:${target_interface_install_include}>"
             )
         endif ()
 
