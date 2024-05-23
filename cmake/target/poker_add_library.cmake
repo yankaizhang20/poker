@@ -260,7 +260,7 @@ function(poker_add_library target_name)
     # step 6: 安装该目标
 
     # 安装头文件
-    foreach(inc ${config_INC})
+    foreach (inc ${config_INC})
         install(DIRECTORY ${inc}/
                 DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
                 FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.tpp"
@@ -285,6 +285,8 @@ function(poker_add_library target_name)
 
     # 生成包配置文件
     include(CMakePackageConfigHelpers)
+
+    set(target_depends ${target_link_interface_all} ${target_link_private_all} ${target_link_public_all})
 
     configure_package_config_file(${poker_template_dir}/package_config.cmake
             "${CMAKE_CURRENT_BINARY_DIR}/${target_name}Config.cmake"

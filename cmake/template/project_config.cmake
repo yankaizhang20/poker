@@ -23,9 +23,10 @@ endforeach ()
 
 # step 2: 导入用户需要的组件
 
+include(CMakeFindDependencyMacro)
+
 # 保存原有的 CMAKE_PREFIX_PATH
 set(CMAKE_PREFIX_PATH_old ${CMAKE_PREFIX_PATH})
-
 set(CMAKE_PREFIX_PATH ${CMAKE_CURRENT_LIST_DIR}/components)
 
 foreach (comp ${@project_name@_FIND_COMPONENTS})
