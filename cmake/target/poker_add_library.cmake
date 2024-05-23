@@ -260,10 +260,12 @@ function(poker_add_library target_name)
     # step 6: 安装该目标
 
     # 安装头文件
-    install(DIRECTORY include/
-            DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-            FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.tpp"
-    )
+    foreach(inc ${config_INC})
+        install(DIRECTORY ${inc}/
+                DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+                FILES_MATCHING PATTERN "*.h" PATTERN "*.hpp" PATTERN "*.tpp"
+        )
+    endforeach ()
 
     # 安装二进制文件
     install(TARGETS ${target_name}
