@@ -1,25 +1,27 @@
-###################################################################################
+##################################################################################################################################
 # poker_add_library( <target>
 #                    [SHARED]
+#                    [INC                    dir ... ]
+#                    [SRC                    dir ... ]
 #                    [DEPENDS                target ... [PRIVATE target ...] [INTERFACE target ...] ]
+#                    [FORCE_DEPENDS          target ... ]
 #                    [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
 #                    [IMPORTS_COMPONENTS     <package component ...> ... ]
 #                    [IMPORTS_AS             <package imported-target ...> ... ]
 #                    [INCLUDE                <dir ... [PRIVATE dir ...] [INTERFACE dir ...]> ]
-#                    [FORCE_DEPENDS          target ... ]
 #                    [LIBRARY                library ... ]
-#                    [  SRC                  dir ... ]
 #                  )
-###################################################################################
-# 头文件:  1.将 include 作为头文件默认搜索路径，并作为本 target 的使用要求，依赖本 target 的
-#          其他 target 将看到该目录内的头文件
+##################################################################################################################################
 #
-# 源文件:  1.添加 src 目录下名为 target 目录下的全部源文件
-#         2.添加 SRC 指定的所有目录下的源文件
-#         3.对以上目录递归搜索
-#         4.若没有源文件，则作为 interface target
-###################################################################################
+# 构建 target，同时指定其对应的头文件、源文件目录以及相应的依赖。提供精确的依赖传递关系
+#
+##################################################################################################################################
+#
 # SHARED: 指定构建为动态库
+#
+# INC: 指定本 target 提供（创建）的头文件所在目录，也将安装该目录中的头文件。默认包含当前处理 list 文件下的 include 目录。
+#
+# SRC: 指定构建本 target 所需源文件的目录。默认包含当前处理 list 文件下名为 target 的目录。若没有任何源文件提供，将构建为 interface target
 #
 # DEPENDS: 依赖本工程内的其他 target，默认将传递该依赖。通过指定 PRIVATE 阻止依赖传递
 #
@@ -33,10 +35,9 @@
 #
 # LIBRARY: 直接依赖系统中的外部库
 #
-# INCLUDE: 指定头文件搜索目录，默认传递该目录。通过指定 PRIVATE 组织依赖传递 TODO: 导出目录在生成表达式中应为相对目录？
+# INCLUDE: 指定头文件搜索目录，默认传递该目录。通过指定 PRIVATE 组织依赖传递
 #
-# SRC: 额外添加源文件目录
-###################################################################################
+##################################################################################################################################
 
 function(poker_add_library target_name)
     include(GNUInstallDirs)
@@ -92,7 +93,7 @@ function(poker_add_library target_name)
         endif ()
 
         # INCLUDE 指定的位置
-        foreach (inc_dir ${config_INCLUDE_PUBLIC} ${config_INCLUDE_INTERFACE})
+        foreach (inc_dir ${config_INC} ${config_INCLUDE_PUBLIC} ${config_INCLUDE_INTERFACE})
             list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
             list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
         endforeach ()
@@ -100,6 +101,9 @@ function(poker_add_library target_name)
         # 当前处理的 list 文件所在目录下的 include 目录
         list(APPEND interface_target_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
         list(APPEND interface_target_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+
+        list(REMOVE_DUPLICATES interface_target_build_include)
+        list(REMOVE_DUPLICATES interface_target_install_include)
 
         if (NOT ${interface_target_build_include} STREQUAL "")
             target_include_directories(${target_name} INTERFACE
@@ -118,7 +122,7 @@ function(poker_add_library target_name)
             list(APPEND target_interface_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
         endforeach ()
 
-        foreach (inc_dir ${config_INCLUDE_PUBLIC})
+        foreach (inc_dir ${config_INC} ${config_INCLUDE_PUBLIC})
             list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/${inc_dir}")
             list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}/${inc_dir}")
         endforeach ()
@@ -126,6 +130,12 @@ function(poker_add_library target_name)
         # 当前处理的 list 文件所在目录下的 include 目录
         list(APPEND target_public_build_include "${CMAKE_CURRENT_LIST_DIR}/include")
         list(APPEND target_public_install_include "${CMAKE_INSTALL_INCLUDEDIR}")
+
+        list(REMOVE_DUPLICATES target_private_build_include)
+        list(REMOVE_DUPLICATES target_interface_build_include)
+        list(REMOVE_DUPLICATES target_interface_install_include)
+        list(REMOVE_DUPLICATES target_public_build_include)
+        list(REMOVE_DUPLICATES target_public_install_include)
 
         if (NOT "${target_private_build_include}" STREQUAL "")
             target_include_directories(${target_name} PRIVATE

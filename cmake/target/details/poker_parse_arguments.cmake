@@ -7,14 +7,15 @@ macro(poker_parse_arguments prefix options one_value_keywords multi_value_keywor
 
     list(APPEND multi_value_keywords_
             ${multi_value_keywords}
+            INC
+            SRC
             DEPENDS
             FORCE_DEPENDS
             IMPORTS
             IMPORTS_COMPONENTS
             IMPORTS_AS
-            LIBRARY
             INCLUDE
-            SRC
+            LIBRARY
     )
 
     # 去除重复
