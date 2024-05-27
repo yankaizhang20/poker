@@ -1,23 +1,20 @@
 ##################################################################################################################################
-# poker_add_library( <target>
-#                    [SHARED]
-#                    [INC                    dir ... ]
-#                    [SRC                    dir ... ]
-#                    [DEPENDS                target ... [PRIVATE target ...] [INTERFACE target ...] ]
-#                    [FORCE_DEPENDS          target ... ]
-#                    [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
-#                    [IMPORTS_COMPONENTS     <package component ...> ... ]
-#                    [IMPORTS_AS             <package imported-target ...> ... ]
-#                    [INCLUDE                dir ... ]
-#                    [LIBRARY                library ... ]
-#                  )
+# poker_add_executable( <target>
+#                       [INC                    dir ... ]
+#                       [SRC                    dir ... ]
+#                       [DEPENDS                target ... [PRIVATE target ...] [INTERFACE target ...] ]
+#                       [FORCE_DEPENDS          target ... ]
+#                       [IMPORTS                package ... [PRIVATE package ...] [INTERFACE package ...] ]
+#                       [IMPORTS_COMPONENTS     <package component ...> ... ]
+#                       [IMPORTS_AS             <package imported-target ...> ... ]
+#                       [INCLUDE                dir ... ]
+#                       [LIBRARY                library ... ]
+#                     )
 ##################################################################################################################################
 #
-# 构建 target，同时指定其对应的头文件、源文件目录以及相应的依赖。提供精确的依赖传递关系
+# 构建可执行 target，同时指定其对应的头文件、源文件目录以及相应的依赖。
 #
 ##################################################################################################################################
-#
-# SHARED: 指定构建为动态库
 #
 # INC: 指定本 target 提供（创建）的头文件所在目录，也将安装该目录中的头文件。默认包含当前处理 list 文件下的 include 目录。
 #
@@ -39,8 +36,8 @@
 #
 ##################################################################################################################################
 
-function(poker_add_library target_name)
-    poker_parse_arguments(config "SHARED" "" "" ${ARGN})
+function(poker_add_executable target_name)
+    poker_parse_arguments(config "" "" "" ${ARGN})
 
-    poker_add_target(${target_name} library)
+    poker_add_target(${target_name} executable)
 endfunction()
