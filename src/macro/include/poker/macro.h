@@ -6,4 +6,5 @@
 
 #include "./macro/concat.h"
 #include "./macro/count.h"
+#include "./macro/invoke.h"
 #include "./macro/unique.h"
