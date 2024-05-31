@@ -32,15 +32,29 @@ namespace poker::reflect
             AsStruct().AddField(name, field);
         }
 
-    private:
-        struct Value
+    public:
+        class Value
         {
-            int *p_data;
+        public:
+            template < class T >
+            explicit Value(T &obj) : data_(obj)
+            {
+            }
+
+        private:
+            int &data_;
         };
 
-        struct Enum
+        class Enum
         {
-            int *p_data;
+        public:
+            template < class T >
+            explicit Enum(T &obj) : data_(obj)
+            {
+            }
+
+        private:
+            int &data_;
         };
 
         class Struct
@@ -51,30 +65,7 @@ namespace poker::reflect
             {
                 field_.emplace_back(name);
 
-                if constexpr (std::is_scalar_v< T >)
-                {
-                    Bind(field, field_.back().second.AsValue());
-                }
-                else if constexpr (std::is_enum_v< T >)
-                {
-                    Bind(field, field_.back().second.AsEnum());
-                }
-                else if constexpr (std::is_same_v< reflect_type_t< T >, trait::Vector >)
-                {
-                    Bind(field, field_.back().second.AsVector());
-                }
-                else if constexpr (std::is_same_v< reflect_type_t< T >, trait::List >)
-                {
-                    Bind(field, field_.back().second.AsList());
-                }
-                else if constexpr (std::is_same_v< reflect_type_t< T >, trait::Map >)
-                {
-                    Bind(field, field_.back().second.AsMap());
-                }
-                else
-                {
-                    Bind(field, field_.back().second.AsStruct());
-                }
+                field_.back().second.Bind(field);
             }
 
         private:
@@ -93,20 +84,48 @@ namespace poker::reflect
         {
         };
 
-    private:
+    public:
         template < class T >
-        static void Bind(T &obj, Value &view)
+        void Bind(T &obj)
         {
-            view.p_data = &obj;
+            if constexpr (std::is_scalar_v< T >)
+            {
+                data_.emplace< Value >(obj);
+            }
+            else if constexpr (std::is_enum_v< T >)
+            {
+                data_.emplace< Enum >(obj);
+            }
+            else
+            {
+                data_.emplace< Struct >();
+
+                // 调用用户提供的反射函数
+                reflect::Bind(obj, *this);
+            }
         }
 
         template < class T >
-        static void Bind(T &obj, Enum &view)
+        void Bind(std::vector< T > &obj)
         {
-            view.p_data = &obj;
+            data_.emplace< Vector >(obj);
+        }
+
+        template < class T >
+        void Bind(std::list< T > &obj)
+        {
+            data_.emplace< List >(obj);
+        }
+
+        template < class TKey, class TValue >
+        void Bind(std::map< TKey, TValue > &obj)
+        {
+            data_.emplace< Map >(obj);
         }
 
     public:
+        ReflectType GetType() const;
+
 #define DECLARE_FUNCS(Type)       \
     bool        Is##Type() const; \
     Type       &As##Type();       \

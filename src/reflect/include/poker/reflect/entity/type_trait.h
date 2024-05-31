@@ -26,7 +26,6 @@ namespace poker::reflect::trait
 
 namespace poker::reflect
 {
-
     template < class T >
     struct reflect_type
     {

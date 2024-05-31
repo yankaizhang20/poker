@@ -10,19 +10,29 @@ namespace poker::reflect::test
 {
     struct Object
     {
-        int    a = 0;
-        double b = 3.0;
+        int a = 0;
+        int b = 3;
     };
 }   // namespace poker::reflect::test
+
+namespace poker::reflect
+{
+    template <>
+    void Bind< test::Object >(test::Object &obj, TypeView &view)
+    {
+        view.AddField("a", obj.a);
+        view.AddField("b", obj.b);
+    }
+}   // namespace poker::reflect
 
 using namespace poker::reflect;
 
 int main()
 {
-    TypeView view;
-
     test::Object obj;
+    TypeView     view;
 
-    view.AddField("a", obj.a);
-    view.AddField("b", obj.b);
+    view.Bind(obj);
+
+    return 0;
 }

@@ -8,3 +8,14 @@
 
 
 #define POKER_ALL_REFLECT_TYPE(func) POKER_INVOKE(func, Value, Enum, Struct, Vector, List, Map)
+
+
+enum class ReflectType
+{
+    Undefined
+#define DECLARE_ENUM(Type) , Type
+
+    POKER_ALL_REFLECT_TYPE(DECLARE_ENUM)
+
+#undef DECLARE_ENUM
+};
