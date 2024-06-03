@@ -1,7 +1,5 @@
 ###################################################
-# 设计模式相关功能
+# 容器相关工具
 ###################################################
 
-poker_add_library(pattern)
-
-poker_add_test(pattern)
+poker_add_library(container)
