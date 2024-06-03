@@ -10,8 +10,9 @@
 #include <unordered_map>
 #include <variant>
 
+#include "./ReflectType.h"
+#include "./ValueType.h"
 #include "./extern_impl.h"
-#include "./meta.h"
 #include "./type_trait.h"
 
 
@@ -36,25 +37,33 @@ namespace poker::reflect
         class Value
         {
         public:
-            template < class T >
-            explicit Value(T &obj) : data_(obj)
-            {
-            }
+#define DECLARE_CONSTRUCT(Type)                                     \
+    explicit Value(Type &obj) : type_(ValueType::Type), data_(&obj) \
+    {                                                               \
+    }
+
+            POKER_VALUE_REFLECT_TYPE(DECLARE_CONSTRUCT)
+
+#undef DECLARE_CONSTRUCT
 
         private:
-            int &data_;
+            // 记录类型信息
+            ValueType type_;
+
+            // 记录数据
+            void *data_;
         };
 
         class Enum
         {
         public:
             template < class T >
-            explicit Enum(T &obj) : data_(obj)
+            explicit Enum(T &obj) : data_(&obj)
             {
             }
 
         private:
-            int &data_;
+            void *data_;
         };
 
         class Struct
@@ -63,8 +72,7 @@ namespace poker::reflect
             template < class T >
             void AddField(const std::string &name, T &field)
             {
-                field_.emplace_back(name);
-
+                field_.emplace_back(name, TypeView());
                 field_.back().second.Bind(field);
             }
 
@@ -74,21 +82,62 @@ namespace poker::reflect
 
         class Vector
         {
+        public:
+            template < class T >
+            explicit Vector(T &obj)
+            {
+                for (auto &entry : obj)
+                {
+                    data_.emplace_back();
+                    data_.back().Bind(entry);
+                }
+            }
+
+        private:
+            std::vector< TypeView > data_;
         };
 
         class List
         {
+        public:
+            template < class T >
+            explicit List(T &obj)
+            {
+                for (auto &entry : obj)
+                {
+                    data_.emplace_back();
+                    data_.back().Bind(entry);
+                }
+            }
+
+        private:
+            std::vector< TypeView > data_;
         };
 
         class Map
         {
+        public:
+            template < class T >
+            explicit Map(T &obj)
+            {
+                for (auto &[ key, value ] : obj)
+                {
+                    data_.emplace_back(TypeView(), TypeView());
+
+                    data_.back().first.Bind(key);
+                    data_.back().second.Bind(value);
+                }
+            }
+
+        private:
+            std::list< std::pair< TypeView, TypeView > > data_;
         };
 
     public:
         template < class T >
         void Bind(T &obj)
         {
-            if constexpr (std::is_scalar_v< T >)
+            if constexpr (std::is_arithmetic_v< T >)
             {
                 data_.emplace< Value >(obj);
             }

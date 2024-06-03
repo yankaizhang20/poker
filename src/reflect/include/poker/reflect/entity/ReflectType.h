@@ -7,9 +7,15 @@
 #include <poker/macro.h>
 
 
+/**
+ * @brief 便于扩展内部反射类型的工具
+ */
 #define POKER_ALL_REFLECT_TYPE(func) POKER_INVOKE(func, Value, Enum, Struct, Vector, List, Map)
 
 
+/**
+ * @brief 内部反射类型
+ */
 enum class ReflectType
 {
     Undefined
