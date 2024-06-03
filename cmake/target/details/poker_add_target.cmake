@@ -192,19 +192,19 @@ function(poker_add_target target_name target_type)
         poker_find_packages("${config_IMPORTS_ALL}" COMPONENTS "${config_IMPORTS_COMPONENTS}")
 
         # 通过变量导入外部依赖
-        foreach (${package} ${config_IMPORTS_INTERFACE})
-            list(APPEND target_include-INTERFACE ${package}_INCLUDE_DIRS)
-            list(APPEND target_link-imported-INTERFACE ${package}_LIBRARIES)
+        foreach (package ${config_IMPORTS_INTERFACE})
+            list(APPEND target_include-INTERFACE ${${package}_INCLUDE_DIRS})
+            list(APPEND target_link-imported-INTERFACE ${${package}_LIBRARIES})
         endforeach ()
 
         foreach (package ${config_IMPORTS_PRIVATE})
-            list(APPEND target_include-PRIVATE ${package}_INCLUDE_DIRS)
-            list(APPEND target_link-imported-PRIVATE ${package}_LIBRARIES)
+            list(APPEND target_include-PRIVATE ${${package}_INCLUDE_DIRS})
+            list(APPEND target_link-imported-PRIVATE ${${package}_LIBRARIES})
         endforeach ()
 
         foreach (package ${config_IMPORTS_PUBLIC})
-            list(APPEND target_include-PUBLIC ${package}_INCLUDE_DIRS)
-            list(APPEND target_link-imported-PUBLIC ${package}_LIBRARIES)
+            list(APPEND target_include-PUBLIC ${${package}_INCLUDE_DIRS})
+            list(APPEND target_link-imported-PUBLIC ${${package}_LIBRARIES})
         endforeach ()
 
         # 通过导入目标导入

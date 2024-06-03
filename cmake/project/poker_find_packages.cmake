@@ -26,7 +26,7 @@
 
 macro(poker_find_packages)
     # 解析位置参数
-    cmake_parse_arguments(config "" "AS" "COMPONENTS" ${ARGS})
+    cmake_parse_arguments(config "" "AS" "COMPONENTS" ${ARGN})
 
     # 要求查找的所有包
     set(poker_find_packages-packages ${config_UNPARSED_ARGUMENTS})
