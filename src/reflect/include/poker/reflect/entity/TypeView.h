@@ -5,11 +5,14 @@
 #pragma once
 
 #include <list>
+#include <map>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
 #include <variant>
+#include <vector>
 
+#include "./EnumView.h"
 #include "./ReflectType.h"
 #include "./ValueType.h"
 #include "./extern_impl.h"
@@ -45,6 +48,22 @@ namespace poker::reflect
             POKER_VALUE_REFLECT_TYPE(DECLARE_CONSTRUCT)
 
 #undef DECLARE_CONSTRUCT
+
+        public:
+#define AS_IMPLEMENTATION(_type_)                              \
+    auto &As##_type_()                                         \
+    {                                                          \
+        return *(trait::value_t< ValueType::_type_ > *) data_; \
+    }
+
+            POKER_VALUE_REFLECT_TYPE(AS_IMPLEMENTATION)
+
+#undef AS_IMPLEMENTATION
+
+            ValueType GetType()
+            {
+                return type_;
+            }
 
         private:
             // 记录类型信息

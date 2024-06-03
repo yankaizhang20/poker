@@ -5,6 +5,8 @@
 #pragma once
 
 #include "./reflect/entity/TypeView.h"
+#include "./reflect/entity/type_trait.h"
+
 
 
 /**

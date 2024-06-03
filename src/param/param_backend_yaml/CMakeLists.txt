@@ -1,7 +1,7 @@
 poker_add_library(param_backend_yaml
-        DEPENDS param
+        DEPENDS param PRIVATE reflect
         IMPORTS yaml-cpp
-        IMPORTS_AS yaml-cpp yaml-cpp::yaml-cpp
+        LIBRARY ${YAML_CPP_LIBRARIES}
 )
 
 poker_add_test(param_backend_yaml)

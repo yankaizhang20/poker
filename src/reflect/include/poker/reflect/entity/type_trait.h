@@ -4,57 +4,33 @@
 
 #pragma once
 
-#include <list>
-#include <map>
-#include <vector>
-
-#include "./ReflectType.h"
+#include "./ValueType.h"
 
 
 namespace poker::reflect::trait
 {
-#define DECLARE_META_TYPE(Type) \
-    struct Type                 \
-    {                           \
+    /**
+     * @brief 识别 ValueType 枚举类型对应的真实类型
+     */
+    template < ValueType enum_type >
+    struct value_impl
+    {
     };
 
-    POKER_ALL_REFLECT_TYPE(DECLARE_META_TYPE)
+#define VALUE_IMPL_TRAIT(_type_)           \
+    template <>                            \
+    struct value_impl< ValueType::_type_ > \
+    {                                      \
+        using type = _type_;               \
+    };
 
-#undef DECLARE_META_TYPE
+    POKER_VALUE_REFLECT_TYPE(VALUE_IMPL_TRAIT)
+
+#undef VALUE_IMPL_TRAIT
+
+    /**
+     * @brief Value 便捷类型识别
+     */
+    template < ValueType enum_type >
+    using value_t = typename value_impl< enum_type >::type;
 }   // namespace poker::reflect::trait
-
-
-namespace poker::reflect
-{
-    template < class T >
-    struct reflect_type
-    {
-    };
-
-    template < class T >
-    struct reflect_type< std::vector< T > >
-    {
-        using type = trait::Vector;
-    };
-
-    template < class T >
-    struct reflect_type< std::list< T > >
-    {
-        using type = trait::List;
-    };
-
-    template < class TKey, class TValue >
-    struct reflect_type< std::map< TKey, TValue > >
-    {
-        using type = trait::Map;
-    };
-
-    template < class TKey, class TValue >
-    struct reflect_type< std::unordered_map< TKey, TValue > >
-    {
-        using type = trait::Map;
-    };
-
-    template < class T >
-    using reflect_type_t = typename reflect_type< T >::type;
-}   // namespace poker::reflect

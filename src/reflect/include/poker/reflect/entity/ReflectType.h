@@ -13,15 +13,18 @@
 #define POKER_ALL_REFLECT_TYPE(func) POKER_INVOKE(func, Value, Enum, Struct, Vector, List, Map)
 
 
-/**
- * @brief 内部反射类型
- */
-enum class ReflectType
+namespace poker::reflect
 {
-    Undefined
+    /**
+     * @brief 内部反射类型
+     */
+    enum class ReflectType
+    {
+        Undefined
 #define DECLARE_ENUM(Type) , Type
 
-    POKER_ALL_REFLECT_TYPE(DECLARE_ENUM)
+        POKER_ALL_REFLECT_TYPE(DECLARE_ENUM)
 
 #undef DECLARE_ENUM
-};
+    };
+}   // namespace poker::reflect
