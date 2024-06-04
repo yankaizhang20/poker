@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <poker/type_traits.h>
+
 #include "./ValueType.h"
 
 
@@ -33,4 +35,19 @@ namespace poker::reflect::trait
      */
     template < ValueType enum_type >
     using value_t = typename value_impl< enum_type >::type;
+
+
+#define INNER_CONCEPT_IMPL(_type_) std::is_same_v< value_t< ValueType::_type_ >, T > or
+
+    /**
+     * @brief Value 支持的所有类型
+     */
+    // clang-format off
+    poker_concept(ReflectValueClass, class T,
+            (
+                POKER_VALUE_REFLECT_TYPE(INNER_CONCEPT_IMPL) false
+            )
+    );
+    // clang-format on
+
 }   // namespace poker::reflect::trait

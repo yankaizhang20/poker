@@ -303,7 +303,7 @@ namespace poker::reflect
         template < class T >
         void Bind(T &obj)
         {
-            if constexpr (std::is_arithmetic_v< T >)
+            if constexpr (trait::ReflectValueClass< T >::enable)
             {
                 data_.emplace< Value >(obj);
             }

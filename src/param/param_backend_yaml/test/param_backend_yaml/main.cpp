@@ -7,8 +7,9 @@
 
 struct SubObject
 {
-    int a = 0;
-    int b = 0;
+    int         a   = 0;
+    int         b   = 0;
+    std::string str;
 };
 
 struct CompObject
@@ -18,7 +19,7 @@ struct CompObject
     std::vector< SubObject > sub_b;
 };
 
-POKER_REFLECT_TYPE(SubObject, a, b)
+POKER_REFLECT_TYPE(SubObject, a, b, str)
 POKER_REFLECT_TYPE(CompObject, sub_a, sub_b)
 
 
@@ -36,8 +37,9 @@ void SetCompObject(CompObject &obj)
 {
     auto SetSubObject = [](SubObject &obj)
     {
-        obj.a = 1;
-        obj.b = 1;
+        obj.a   = 1;
+        obj.b   = 1;
+        obj.str = "1";
     };
 
     SetSubObject(obj.sub_a);
