@@ -18,7 +18,7 @@ struct CompObject
 };
 
 POKER_REFLECT_TYPE(SubObject, a, b)
-POKER_REFLECT_TYPE(CompObject, sub_a, sub_b)
+POKER_REFLECT_TYPE(CompObject, sub_struct, sub_vector)
 
 
 enum class TestEnum
