@@ -1,6 +1,7 @@
+find_package(yaml-cpp REQUIRED)
+
 poker_add_library(param_backend_yaml
         DEPENDS param PRIVATE reflect
-        IMPORTS yaml-cpp
         LIBRARY ${YAML_CPP_LIBRARIES}
 )
 
