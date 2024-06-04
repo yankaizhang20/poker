@@ -3,16 +3,17 @@
 //
 
 #include <iostream>
-#include <poker/core.h>
+
+#include <poker/system.h>
 
 
 int main()
 {
-    poker::Init();
+    poker::system::Init();
 
     std::cout << "running!" << std::endl;
 
-    poker::Yield();
+    poker::system::Yield();
 
     return 0;
 }

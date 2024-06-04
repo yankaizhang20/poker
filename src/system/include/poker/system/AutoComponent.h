@@ -7,10 +7,11 @@
 #include <iostream>
 
 #include <poker/macro.h>
-#include <poker/system/launch_center.h>
+
+#include "poker/system/LaunchCenter.h"
 
 
-namespace poker
+namespace poker::system
 {
     /**
      * @brief 自启动组件，继承该类可实现模块自启动
@@ -51,4 +52,4 @@ namespace poker
         }();                                                                 \
     }
 
-}   // namespace poker
+}   // namespace poker::system::details

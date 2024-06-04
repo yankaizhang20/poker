@@ -6,12 +6,11 @@
 #include <future>
 #include <iostream>
 
-#include <poker/system/launch_center.h>
+#include "poker/system.h"
+#include "poker/system/LaunchCenter.h"
 
-#include "poker/core.h"
 
-
-namespace poker
+namespace poker::system
 {
     namespace
     {
@@ -57,4 +56,4 @@ namespace poker
 
         Shutdown();
     }
-}   // namespace poker
+}   // namespace poker::system

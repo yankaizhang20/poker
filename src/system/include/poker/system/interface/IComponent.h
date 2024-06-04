@@ -22,12 +22,12 @@ namespace poker::system
         /**
          * @brief 初始化
          */
-        virtual void Start() = 0;
+        virtual void ModuleStart() = 0;
 
         /**
          * @brief 结束
          */
-        virtual void ShutDown() = 0;
+        virtual void ModuleShutdown() = 0;
 
         /**
          * @brief 指定启动优先级

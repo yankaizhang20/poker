@@ -3,17 +3,19 @@
 //
 
 #include <iostream>
-#include <poker/core.h>
 
-class ModuleA : public poker::AutoComponent< ModuleA >
+#include <poker/system.h>
+
+
+class ModuleA : public poker::system::Modular< ModuleA >
 {
 public:
-    void Start() override
+    void ModuleStart() override
     {
         std::cout << "ModuleA start!" << std::endl;
     }
 
-    void ShutDown() override
+    void ModuleShutdown() override
     {
         std::cout << "ModuleA end!" << std::endl;
     }
@@ -24,15 +26,15 @@ public:
     }
 };
 
-class ModuleB : public poker::AutoComponent< ModuleB >
+class ModuleB : public poker::system::Modular< ModuleB >
 {
 public:
-    void Start() override
+    void ModuleStart() override
     {
         std::cout << "ModuleB start!" << std::endl;
     }
 
-    void ShutDown() override
+    void ModuleShutdown() override
     {
         std::cout << "ModuleB end!" << std::endl;
     }
@@ -48,7 +50,7 @@ POKER_NO_OPTIMIZED(ModuleB)
 
 int main()
 {
-    poker::Init();
+    poker::system::Init();
 
     std::cout << "exit!" << std::endl;
 

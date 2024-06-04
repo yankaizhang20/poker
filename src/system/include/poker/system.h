@@ -1,13 +1,13 @@
 //
-// Created by zyk on 24-5-9.
+// Created by zyk on 24-6-4.
 //
 
 #pragma once
 
-#include <poker/system/AutoComponent.h>
+#include "./system/Modular.h"
 
 
-namespace poker
+namespace poker::system
 {
     /**
      * @brief 初始化 poker
@@ -24,4 +24,4 @@ namespace poker
      */
     void Yield();
 
-}   // namespace poker
+}   // namespace poker::system

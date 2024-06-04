@@ -2,7 +2,7 @@
 // Created by zyk on 24-5-9.
 //
 
-#include "poker/system/launch_center.h"
+#include "poker/system/LaunchCenter.h"
 
 
 namespace poker::system
@@ -21,7 +21,7 @@ namespace poker::system
     {
         for (auto &[ priority, p_component ] : comps_)
         {
-            p_component->Start();
+            p_component->ModuleStart();
         }
     }
 
@@ -29,7 +29,7 @@ namespace poker::system
     {
         for (auto &[ priority, p_component ] : comps_)
         {
-            p_component->ShutDown();
+            p_component->ModuleShutdown();
         }
     }
 }   // namespace poker::system

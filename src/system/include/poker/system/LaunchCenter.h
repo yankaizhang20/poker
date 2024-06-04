@@ -37,4 +37,4 @@ namespace poker::system
     };
 
     LaunchCenter &GetLaunchCenter();
-}   // namespace poker::system
+}   // namespace poker::system::details
