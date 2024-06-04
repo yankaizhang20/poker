@@ -73,17 +73,7 @@ namespace poker::reflect
             void *data_;
         };
 
-        class Enum
-        {
-        public:
-            template < class T >
-            explicit Enum(T &obj) : data_(&obj)
-            {
-            }
-
-        private:
-            void *data_;
-        };
+        using Enum = EnumView;
 
         class Struct
         {

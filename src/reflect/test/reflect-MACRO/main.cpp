@@ -4,36 +4,52 @@
 
 #include <poker/reflect.h>
 
-namespace poker::reflect::test
+struct SubObject
 {
-    struct SubObject
-    {
-        int a = 0;
-        int b = 3;
-    };
+    int a = 0;
+    int b = 3;
+};
 
-    struct CompObject
-    {
-        SubObject sub_a;
+struct CompObject
+{
+    SubObject sub_a;
 
-        std::vector< SubObject > sub_b;
-    };
-}   // namespace poker::reflect::test
+    std::vector< SubObject > sub_b;
+};
 
-POKER_REFLECT(test::SubObject, a, b)
-POKER_REFLECT(test::CompObject, sub_a, sub_b)
+POKER_REFLECT_TYPE(SubObject, a, b)
+POKER_REFLECT_TYPE(CompObject, sub_a, sub_b)
+
+
+enum class TestEnum
+{
+    one,
+    two,
+    three
+};
+
+POKER_REFLECT_ENUM(TestEnum, one, two, three)
+
 
 using namespace poker::reflect;
 
 int main()
 {
-    test::CompObject obj;
+    // 绑定类型
+    CompObject obj;
     obj.sub_b.emplace_back();
     obj.sub_b.emplace_back();
 
-    TypeView view;
+    TypeView obj_view;
 
-    view.Bind(obj);
+    obj_view.Bind(obj);
+
+    // 绑定枚举
+    TestEnum en = TestEnum::three;
+
+    TypeView en_view;
+
+    en_view.Bind(en);
 
     return 0;
 }

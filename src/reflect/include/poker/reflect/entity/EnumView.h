@@ -4,9 +4,12 @@
 
 #pragma once
 
+#include <functional>
 #include <map>
 #include <string>
 #include <vector>
+
+#include "./extern_impl.h"
 
 
 namespace poker::reflect
@@ -36,7 +39,7 @@ namespace poker::reflect
     class EnumItemTable
     {
     public:
-        //        EnumItemTable(std::initializer_list< EnumItem > list);
+        EnumItemTable(std::initializer_list< EnumItem > list);
 
     public:
         /**
@@ -82,11 +85,15 @@ namespace poker::reflect
 
     class EnumView
     {
-    protected:
+    public:
         template < class TEnum >
-        explicit EnumView(TEnum) : lut_ptr_(&Enumerating< TEnum >())
+        explicit EnumView(TEnum &obj) : lut_ptr_(&Enumerating< TEnum >()), data_(&obj)
         {
             static_assert(std::is_enum_v< TEnum >);
+
+            _number_setter = [ & ](EnumNumber number) { *(TEnum *) (data_) = TEnum(number); };
+
+            _number_getter = [ & ]() { return EnumNumber(*(TEnum *) (data_)); };
         }
 
         explicit EnumView(const EnumItemTable &lut) : lut_ptr_(&lut)
@@ -121,6 +128,10 @@ namespace poker::reflect
          */
         [[nodiscard]]
         const EnumItemTable &GetAllItems() const;
+
+    private:
+        std::function< void(EnumNumber number) > _number_setter;
+        std::function< EnumNumber() >            _number_getter;
 
     private:
         const EnumItemTable *lut_ptr_ = nullptr;
