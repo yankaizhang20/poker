@@ -54,13 +54,17 @@ namespace poker::reflect
     auto &As##_type_()                                         \
     {                                                          \
         return *(trait::value_t< ValueType::_type_ > *) data_; \
+    }                                                          \
+    const auto &As##_type_() const                             \
+    {                                                          \
+        return const_cast< Value & >(*this).As##_type_();      \
     }
 
             POKER_VALUE_REFLECT_TYPE(AS_IMPLEMENTATION)
 
 #undef AS_IMPLEMENTATION
 
-            ValueType GetType()
+            ValueType GetType() const
             {
                 return type_;
             }
@@ -85,6 +89,27 @@ namespace poker::reflect
                 field_.back().second.Bind(field);
             }
 
+        public:
+            auto begin()
+            {
+                return field_.begin();
+            }
+
+            auto end()
+            {
+                return field_.end();
+            }
+
+            auto begin() const
+            {
+                return field_.begin();
+            }
+
+            auto end() const
+            {
+                return field_.end();
+            }
+
         private:
             std::list< std::pair< std::string, TypeView > > field_;
         };
@@ -92,15 +117,62 @@ namespace poker::reflect
         class Vector
         {
         public:
+            using Adder    = std::function< void(TypeView &) >;
+            using Cleaner  = std::function< void() >;
+            using Reserver = std::function< void(std::size_t) >;
+
+        public:
             template < class T >
             explicit Vector(T &obj)
             {
+                adder_ = [ &obj ](TypeView &parameter) { parameter.Bind(obj.emplace_back()); };
+
+                cleaner_ = [ &obj ]() { obj.clear(); };
+
+                reserver_ = [ &obj ](std::size_t size) { obj.reserve(size); };
+
                 for (auto &entry : obj)
                 {
-                    data_.emplace_back();
-                    data_.back().Bind(entry);
+                    data_.emplace_back().Bind(entry);
                 }
             }
+
+            /**
+             * @brief 添加新参数元素，也将修改到被绑定的容器上。
+             */
+            TypeView &Add();
+
+            /**
+             * @brief 清空元素，并改变容量
+             * @param size
+             */
+            void ClearAndReserve(std::size_t size);
+
+            auto begin()
+            {
+                return data_.begin();
+            }
+
+            auto end()
+            {
+                return data_.end();
+            }
+
+            auto begin() const
+            {
+                return data_.cbegin();
+            }
+
+            auto end() const
+            {
+                return data_.cend();
+            }
+
+        private:
+            // 原数据操作器
+            Adder    adder_;
+            Cleaner  cleaner_;
+            Reserver reserver_;
 
         private:
             std::vector< TypeView > data_;
@@ -109,15 +181,59 @@ namespace poker::reflect
         class List
         {
         public:
+            using Adder   = std::function< void(TypeView &) >;
+            using Cleaner = std::function< void() >;
+
+        public:
             template < class T >
             explicit List(T &obj)
             {
+                adder_ = [ &obj ](TypeView &parameter) { parameter.Bind(obj.emplace_back()); };
+
+                cleaner_ = [ &obj ]() { obj.clear(); };
+
                 for (auto &entry : obj)
                 {
-                    data_.emplace_back();
-                    data_.back().Bind(entry);
+                    data_.emplace_back().Bind(entry);
                 }
             }
+
+        public:
+            /**
+             * @brief 添加新参数元素，也将修改到被绑定的容器上。
+             * @return 新增的参数对象
+             */
+            TypeView &Add();
+
+            /**
+             * @brief 清除所有参数元素，同时也将被绑定的容器清空。
+             */
+            void Clear();
+
+            auto begin()
+            {
+                return data_.begin();
+            }
+
+            auto end()
+            {
+                return data_.end();
+            }
+
+            auto begin() const
+            {
+                return data_.cbegin();
+            }
+
+            auto end() const
+            {
+                return data_.cend();
+            }
+
+        private:
+            // 原数据操作器
+            Adder   adder_;
+            Cleaner cleaner_;
 
         private:
             std::vector< TypeView > data_;
@@ -126,20 +242,61 @@ namespace poker::reflect
         class Map
         {
         public:
+            using Adder   = std::function< void(const std::string &, TypeView &) >;
+            using Cleaner = std::function< void() >;
+
+        public:
             template < class T >
             explicit Map(T &obj)
             {
+                adder_ = [ &obj ](const std::string &key, TypeView &parameter) { parameter.Bind(obj[ key ]); };
+
+                cleaner_ = [ &obj ]() { obj.clear(); };
+
                 for (auto &[ key, value ] : obj)
                 {
-                    data_.emplace_back(TypeView(), TypeView());
-
-                    data_.back().first.Bind(key);
-                    data_.back().second.Bind(value);
+                    data_[ key ].Bind(value);
                 }
             }
 
+        public:
+            /**
+             * @brief 添加新参数元素，也将修改到被绑定的容器上。
+             */
+            TypeView &Add(const std::string &key);
+
+            /**
+             * @brief 清除所有参数元素，同时也将被绑定的容器清空。
+             */
+            void Clear();
+
+            auto begin()
+            {
+                return data_.begin();
+            }
+
+            auto end()
+            {
+                return data_.end();
+            }
+
+            auto begin() const
+            {
+                return data_.cbegin();
+            }
+
+            auto end() const
+            {
+                return data_.cend();
+            }
+
         private:
-            std::list< std::pair< TypeView, TypeView > > data_;
+            // 元素操作器
+            Adder   adder_;
+            Cleaner cleaner_;
+
+        private:
+            std::map< std::string, TypeView > data_;
         };
 
     public:

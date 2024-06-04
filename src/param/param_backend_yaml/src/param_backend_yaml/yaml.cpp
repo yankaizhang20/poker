@@ -21,6 +21,15 @@ namespace poker::param::backend
 
         POKER_VALUE_REFLECT_TYPE(DECLARE_READ_FUNC)
 #undef DECLARE_READ_FUNC
+
+#define DECLARE_WRITE_FUNC(_type_)                                                                          \
+    static void Write(YAML::Node &yaml, const reflect::trait::value_t< reflect::ValueType::_type_ > &value) \
+    {                                                                                                       \
+        yaml = value;                                                                                       \
+    }
+
+        POKER_VALUE_REFLECT_TYPE(DECLARE_WRITE_FUNC)
+#undef DECLARE_WRITE_FUNC
     }   // namespace details
 
     void YamlEngine::SetFileRoot(const std::string &root)
@@ -130,7 +139,172 @@ namespace poker::param::backend
     }
 
     void YamlEngine::Read(const YAML::Node &yaml, reflect::TypeView::Enum &value, bool &status)
+    try
     {
+        if (yaml.Tag() != "enum")
+            throw std::runtime_error("wrong yaml tag");
+
+        // 尝试使用 enum name 进行值设置，若设置失败，再考虑直接使用
+        // enum number 进行设置
+        if (YAML::Node node = yaml[ "name" ]; node.IsScalar())
+        {
+            if (value.TrySetByName(node.as< std::string >()))
+                return;
+        }
+
+        value.SetNumber(yaml[ "number" ].as< reflect::EnumNumber >());
+    }
+    catch (...)
+    {
+        status = false;
     }
 
+    void YamlEngine::Read(const YAML::Node &yaml, reflect::TypeView::Struct &struct_parameter, bool &status)
+    try
+    {
+        for (auto &it : struct_parameter)
+        {
+            Read(yaml[ it.first ], it.second, status);
+        }
+    }
+    catch (...)
+    {
+        status = false;
+    }
+
+    void YamlEngine::Read(const YAML::Node &yaml, reflect::TypeView::Vector &vector_parameter, bool &status)
+    {
+        try
+        {
+            vector_parameter.ClearAndReserve(yaml.size());
+
+            for (std::size_t i = 0, end = yaml.size(); i < end; ++i)
+            {
+                Read(yaml[ i ], vector_parameter.Add(), status);
+            }
+        }
+        catch (...)
+        {
+            status = false;
+        }
+    }
+
+    void YamlEngine::Read(const YAML::Node &yaml, reflect::TypeView::List &list_parameter, bool &status)
+    try
+    {
+        list_parameter.Clear();
+
+        for (std::size_t i = 0, end = yaml.size(); i < end; ++i)
+        {
+            Read(yaml[ i ], list_parameter.Add(), status);
+        }
+    }
+    catch (...)
+    {
+        status = false;
+    }
+
+    void YamlEngine::Read(const YAML::Node &yaml, reflect::TypeView::Map &dict_parameter, bool &status)
+    try
+    {
+        dict_parameter.Clear();
+
+        for (auto &it : yaml)
+        {
+            Read(it.second, dict_parameter.Add(it.first.Scalar()), status);
+        }
+    }
+    catch (...)
+    {
+        status = false;
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView &parameter)
+    {
+        switch (parameter.GetType())
+        {
+            case reflect::ReflectType::Undefined:
+                break;
+
+#define WRITE_CASE(Type)                   \
+    case reflect::ReflectType::Type:       \
+        Write(yaml, parameter.As##Type()); \
+        break;
+
+                POKER_ALL_REFLECT_TYPE(WRITE_CASE)
+#undef WRITE_CASE
+
+            default:
+                poker_no_impl();
+        }
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::Value &value)
+    {
+        switch (value.GetType())
+        {
+#define WRITE_CASE(_type_)                        \
+    case reflect::ValueType::_type_:              \
+        details::Write(yaml, value.As##_type_()); \
+        break;
+            POKER_VALUE_REFLECT_TYPE(WRITE_CASE)
+#undef WRITE_CASE
+
+            default:
+                poker_no_impl();
+        }
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::Enum &value)
+    {
+        yaml.SetTag("enum");
+
+        const std::vector< std::string > &names = value.GetNames();
+
+        if (names.empty())
+            yaml[ "number" ] = value.GetNumber();
+        else
+            yaml[ "name" ] = names.front();
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::Struct &struct_parameter)
+    {
+        for (auto &it : struct_parameter)
+        {
+            YAML::Node sub_yaml = yaml[ it.first ];
+            Write(sub_yaml, it.second);
+        }
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::Vector &vector_parameter)
+    {
+        for (auto &i : vector_parameter)
+        {
+            YAML::Node sub_yaml = yaml[ yaml.size() ];
+            Write(sub_yaml, i);
+        }
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::List &list_parameter)
+    {
+        for (auto &i : list_parameter)
+        {
+            YAML::Node sub_yaml = yaml[ yaml.size() ];
+            Write(sub_yaml, i);
+        }
+    }
+
+    void YamlEngine::Write(YAML::Node &yaml, const reflect::TypeView::Map &dict_parameter)
+    {
+        for (auto &it : dict_parameter)
+        {
+            YAML::Node sub_yaml = yaml[ it.first ];
+            Write(sub_yaml, it.second);
+        }
+    }
+
+    std::string YamlEngine::GetFilePath(const std::string &id) const
+    {
+        return root_ + "/" + id + ".yaml";
+    }
 }   // namespace poker::param::backend

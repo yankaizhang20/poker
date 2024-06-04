@@ -5,7 +5,7 @@
 #include "poker/param.h"
 
 
-namespace poker::param
+namespace poker::param::backend
 {
     void SetReader(Storage::Reader reader)
     {
@@ -26,4 +26,4 @@ namespace poker::param
     {
         SetWriter(nullptr);
     }
-}   // namespace poker::param
+}   // namespace poker::param::backend

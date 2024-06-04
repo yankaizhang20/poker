@@ -35,7 +35,7 @@ namespace poker::param
          * @brief 卸载参数后端写入器
          */
         void UnsetWriter();
-    }
+    }   // namespace backend
 
     /**
      * @brief 读取指定 id 的参数
@@ -48,7 +48,7 @@ namespace poker::param
         param_view.Bind(param);
 
         // step 2: 读取本地参数
-        pattern::GetGlobalUnique< Storage >::Ref().Read(id, param_view);
+        return pattern::GetGlobalUnique< Storage >::Ref().Read(id, param_view);
     }
 
     /**
@@ -59,9 +59,9 @@ namespace poker::param
     {
         // step 1: 创建与给定变量绑定的参数对象
         reflect::TypeView param_view;
-        param_view.Bind(param);
+        param_view.Bind(const_cast< T & >(param));
 
         // step 2: 写入到本地参数
-        pattern::GetGlobalUnique< Storage >::Ref().Write(id, param_view);
+        return pattern::GetGlobalUnique< Storage >::Ref().Write(id, param_view);
     }
 }   // namespace poker::param
