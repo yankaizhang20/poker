@@ -12,9 +12,9 @@ struct SubObject
 
 struct CompObject
 {
-    SubObject sub_a;
+    SubObject sub_struct;
 
-    std::vector< SubObject > sub_b;
+    std::vector< SubObject > sub_vector;
 };
 
 POKER_REFLECT_TYPE(SubObject, a, b)
@@ -37,8 +37,8 @@ int main()
 {
     // 绑定类型
     CompObject obj;
-    obj.sub_b.emplace_back();
-    obj.sub_b.emplace_back();
+    obj.sub_vector.emplace_back();
+    obj.sub_vector.emplace_back();
 
     TypeView obj_view;
 

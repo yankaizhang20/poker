@@ -7,30 +7,37 @@
 
 struct SubObject
 {
-    int         a   = 0;
-    int         b   = 0;
+    int         a = 0;
+    int         b = 0;
     std::string str;
 };
 
-struct CompObject
-{
-    SubObject sub_a;
-
-    std::vector< SubObject > sub_b;
-};
-
 POKER_REFLECT_TYPE(SubObject, a, b, str)
-POKER_REFLECT_TYPE(CompObject, sub_a, sub_b)
-
 
 enum class TestEnum
 {
+    undefined,
     one,
     two,
     three
 };
 
-POKER_REFLECT_ENUM(TestEnum, one, two, three)
+POKER_REFLECT_ENUM(TestEnum, undefined, one, two, three)
+
+struct CompObject
+{
+    TestEnum sub_enum = TestEnum::undefined;
+
+    SubObject sub_struct;
+
+    std::vector< SubObject > sub_vector;
+
+    std::list< SubObject > sub_list;
+
+    std::map< std::string, SubObject > sub_map;
+};
+
+POKER_REFLECT_TYPE(CompObject, sub_enum, sub_struct, sub_vector, sub_list, sub_map)
 
 
 void SetCompObject(CompObject &obj)
@@ -42,11 +49,23 @@ void SetCompObject(CompObject &obj)
         obj.str = "1";
     };
 
-    SetSubObject(obj.sub_a);
+    obj.sub_enum = TestEnum::three;
 
-    for (auto &sub : obj.sub_b)
+    SetSubObject(obj.sub_struct);
+
+    for (auto &sub : obj.sub_vector)
     {
         SetSubObject(sub);
+    }
+
+    for (auto &sub : obj.sub_list)
+    {
+        SetSubObject(sub);
+    }
+
+    for (auto &sub : obj.sub_map)
+    {
+        SetSubObject(sub.second);
     }
 }
 
@@ -60,9 +79,14 @@ int main()
     poker::param::backend::SetReader(engine.GetReader());
     poker::param::backend::SetWriter(engine.GetWriter());
 
+    // 创建原始类型
     CompObject obj;
-    obj.sub_b.emplace_back();
-    obj.sub_b.emplace_back();
+    obj.sub_vector.emplace_back();
+    obj.sub_vector.emplace_back();
+    obj.sub_list.emplace_back();
+    obj.sub_list.emplace_back();
+    obj.sub_map.emplace("one", SubObject {});
+    obj.sub_map.emplace("two", SubObject {});
 
     SetCompObject(obj);
 
