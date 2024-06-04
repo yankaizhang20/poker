@@ -9,7 +9,7 @@
 #include <string>
 
 
-namespace ares::databus::http
+namespace poker::databus::http
 {
     class IParamRequest
     {
@@ -18,7 +18,7 @@ namespace ares::databus::http
 
     public:
         virtual void Visit(const Visitor &visitor) const = 0;
-    };   // namespace ares::databus::http
+    };   // namespace poker::databus::http
 
 
     class ParamRequest : public IParamRequest
@@ -43,4 +43,4 @@ namespace ares::databus::http
     };
 
 
-}   // namespace ares::databus::http
+}   // namespace poker::databus::http

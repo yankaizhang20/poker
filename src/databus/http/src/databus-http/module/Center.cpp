@@ -1,24 +1,24 @@
 //
 // Created by zyk on 24-3-7.
 //
-#include "ares/databus/http/module/Center.h"
+#include "poker/databus/http/module/Center.h"
 
-#include "ares/databus/http/component/CallerCenter.h"
-#include "ares/databus/http/component/ServerCenter.h"
+#include "poker/databus/http/component/CallerCenter.h"
+#include "poker/databus/http/component/ServerCenter.h"
 
 
-namespace ares::databus::http
+namespace poker::databus::http
 {
-    static constexpr const char *param_key = "ares.databus.http.Center";
+    static constexpr const char *param_key = "poker.databus.http.Center";
 
     bool Center::Read(Param &param)
     {
-        return nox::param::Read(param_key, param);
+        return poker::param::Read(param_key, param);
     }
 
     bool Center::Write(const Param &param)
     {
-        return nox::param::Write(param_key, param);
+        return poker::param::Write(param_key, param);
     }
 
     void Center::Setup()
@@ -40,4 +40,4 @@ namespace ares::databus::http
         _server_center->Shutdown();
         _caller_center->Shutdown();
     }
-}   // namespace ares::databus::http
+}   // namespace poker::databus::http

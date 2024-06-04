@@ -6,11 +6,10 @@
 
 #include <chrono>
 
-#include <nox/expected.h>
-#include <nox/param.h>
+#include <poker/param.h>
 
-#include <ares/databus.h>
-#include <ares/serialization.h>
+#include <poker/databus.h>
+#include <poker/serialization.h>
 
 #include "../entity/Method.h"
 #include "../interface/ParamRequest.h"
@@ -18,7 +17,7 @@
 #include "./detials/thread_pool.h"
 
 
-namespace ares::databus::http
+namespace poker::databus::http
 {
     class CallerCenter
     {
@@ -28,7 +27,7 @@ namespace ares::databus::http
         struct Param
         {
             // 调用允许超时时间
-            nox::unit::Time wait_for_time_out = noxu::ms(3'000);
+            poker::unit::Time wait_for_time_out = pokeru::ms(3'000);
 
             // 同时处理请求的最大线程数
             std::size_t max_thread_nums = 8;
@@ -52,7 +51,7 @@ namespace ares::databus::http
         }
 
         template < class TMethod, class TRequest, class TResponse >
-        nox::expected< TResponse > Call(const XChannelType &channel, const TRequest &req)
+        std::optional< TResponse > Call(const XChannelType &channel, const TRequest &req)
         {
             return InnerCall< TRequest, TResponse >(channel, req, TMethod());
         }
@@ -62,13 +61,13 @@ namespace ares::databus::http
          * @brief 未指定 method 时的默认处理
          */
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Method method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Method method_tag)
         {
             return InnerCall< TRequest, TResponse >(channel, req, Post());
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Get method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Get method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -106,7 +105,7 @@ namespace ares::databus::http
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Post method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Post method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -129,7 +128,7 @@ namespace ares::databus::http
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Patch method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Patch method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -152,7 +151,7 @@ namespace ares::databus::http
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &, Delete method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &, Delete method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -172,7 +171,7 @@ namespace ares::databus::http
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Options method_tag)
+        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Options method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -193,12 +192,12 @@ namespace ares::databus::http
 
     private:
         template < class TResponse >
-        nox::expected< TResponse > ProcessCall(RequestTask &&task)
+        std::optional< TResponse > ProcessCall(RequestTask &&task)
         {
             // 计算超时点
             auto deadline_time_point =
                     std::chrono::steady_clock::now() +
-                    std::chrono::milliseconds(std::size_t(_param.wait_for_time_out.Get< noxu::ms >()));
+                    std::chrono::milliseconds(std::size_t(_param.wait_for_time_out.Get< pokeru::ms >()));
 
             std::future< ::httplib::Result > get_result = task.get_future();
 
@@ -216,23 +215,16 @@ namespace ares::databus::http
                     // 尝试解析结果
                     std::optional< TResponse > rep = serialization::Decode< TResponse >(result->body);
 
-                    if (rep.has_value())
-                    {
-                        return nox::expected_value< TResponse >(std::move(rep.value()));
-                    }
-                    else
-                    {
-                        return nox::expected_error();
-                    }
+                    return rep;
                 }
                 else
                 {
-                    return nox::expected_error();
+                    return {};
                 }
             }
             else
             {
-                return nox::expected_error();
+                return {};
             }
         }
 
@@ -242,13 +234,13 @@ namespace ares::databus::http
         // 线程池
         details::ThreadPool _thread_pool;
     };
-}   // namespace ares::databus::http
+}   // namespace poker::databus::http
 
 
 // clang-format off
-nox_param_binding_implementation(
-    ares::databus::http::CallerCenter::Param,
+POKER_REFLECT_TYPE(
+    poker::databus::http::CallerCenter::Param,
     wait_for_time_out,
     max_thread_nums
 )
-        // clang-format on
+// clang-format on

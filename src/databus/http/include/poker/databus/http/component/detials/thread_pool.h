@@ -14,7 +14,7 @@
 
 static constexpr std::size_t sys_max_thread_nums = 32;
 
-namespace ares::databus::http::details
+namespace poker::databus::http::details
 {
     class HttpRequestProcess
     {
@@ -132,4 +132,4 @@ namespace ares::databus::http::details
         // 打工人
         std::vector< std::thread > _threads;
     };
-}   // namespace ares::databus::http::details
+}   // namespace poker::databus::http::details

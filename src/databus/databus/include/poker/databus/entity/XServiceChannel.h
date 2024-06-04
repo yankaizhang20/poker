@@ -16,4 +16,4 @@ namespace poker::databus
         using ResponseType = TResponse;
         using ImplType     = XChannelType;
     };
-}   // namespace ares::databus
+}   // namespace poker::databus

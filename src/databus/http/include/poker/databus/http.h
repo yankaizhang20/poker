@@ -11,15 +11,18 @@
 #include "./http/module/CenterModule.h"
 
 
-namespace ares::databus_impl::http
+namespace poker::databus_impl::http
 {
-    inline auto Center() -> nox_eval(nox::this_process::GlobalUnique< databus::http::Center >::ref());
+    inline decltype(auto) Center()
+    {
+        poker::pattern::GetGlobalUnique< databus::http::Center >::Ref();
+    };
 
     /**
      * @brief 调用指定 http 通道中的服务过程
      */
     template < class TMethod, class TRequest, class TResponse >
-    nox::expected< TResponse > Call(const databus::XChannelType &channel, const TRequest &req)
+    std::optional< TResponse > Call(const databus::XChannelType &channel, const TRequest &req)
     {
         return Center().Call< TMethod, TRequest, TResponse >(channel, req);
     }
@@ -41,4 +44,4 @@ namespace ares::databus_impl::http
     {
         Center().Offline< TMethod >(channel);
     }
-}   // namespace ares::databus_impl::http
+}   // namespace poker::databus_impl::http

@@ -2,15 +2,14 @@
 // Created by zyk on 24-3-7.
 //
 
-#include "ares/databus/http/module/CenterModule.h"
+#include "poker/databus/http/module/CenterModule.h"
 
 
-namespace ares::databus::http::auto_launch
+namespace poker::databus::http::auto_launch
 {
-    bool CenterModule::ModuleStart()
+    void CenterModule::ModuleStart()
     {
         unique_core.Setup();
-        return true;
     }
 
     void CenterModule::ModuleShutdown()
@@ -18,8 +17,8 @@ namespace ares::databus::http::auto_launch
         unique_core.Shutdown();
     }
 
-    unsigned int CenterModule::GetLaunchPriority()
+    std::size_t CenterModule::GetLaunchPriority()
     {
         return 30;
     }
-}   // namespace ares::databus::http::auto_launch
+}   // namespace poker::databus::http::auto_launch

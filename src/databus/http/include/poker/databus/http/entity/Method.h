@@ -4,10 +4,10 @@
 
 #pragma once
 #include <string>
-#include <ares/databus/entity/XChannelType.h>
+#include <poker/databus/entity/XChannelType.h>
 
 
-namespace ares::databus::http
+namespace poker::databus::http
 {
     struct Get : public Method
     {
@@ -48,4 +48,4 @@ namespace ares::databus::http
             return "Options";
         }
     };
-}   // namespace ares::databus::http
+}   // namespace poker::databus::http

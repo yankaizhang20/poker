@@ -9,17 +9,16 @@
 #include <string>
 #include <thread>
 
-#include <nox/macro.h>
-#include <nox/param.h>
-
-#include <ares/databus.h>
-#include <ares/serialization.h>
+#include <poker/databus.h>
+#include <poker/macro.h>
+#include <poker/param.h>
+#include <poker/serialization.h>
 
 #include "../entity/Method.h"
 #include "./detials/httplib_safe.h"
 
 
-namespace ares::databus::http
+namespace poker::databus::http
 {
     class ServerCenter final
     {
@@ -76,7 +75,7 @@ namespace ares::databus::http
         template < class TMethod >
         void Offline(const XChannelType &channel)
         {
-            nox_no_impl("不支持的服务卸载");
+            poker_no_impl("不支持的服务卸载");
         }
 
     protected:
@@ -142,7 +141,7 @@ namespace ares::databus::http
 
             if (!inner_req.has_value())
             {
-                nox_no_impl("未定义的序列化方式");
+                poker_no_impl("未定义的序列化方式");
             }
 
             // 调用服务
@@ -166,13 +165,13 @@ namespace ares::databus::http
         std::shared_ptr< ::httplib::Server > _server;
     };
 
-}   // namespace ares::databus::http
+}   // namespace poker::databus::http
 
 
 // clang-format off
-nox_param_binding_implementation(
-        ares::databus::http::ServerCenter::Param,
+POKER_REFLECT_TYPE(
+        poker::databus::http::ServerCenter::Param,
         server_address,
         port
 )
-        // clang-format on
+// clang-format on

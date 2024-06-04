@@ -4,22 +4,22 @@
 
 #pragma once
 
-#include <ares/base/Modular.h>
+#include <poker/system.h>
 
 #include "./Center.h"
 
 
-namespace ares::databus::http::auto_launch
+namespace poker::databus::http::auto_launch
 {
-    class CenterModule : public Modular< CenterModule, Center >
+    class CenterModule : public system::Modular< CenterModule, Center >
     {
     protected:
-        bool ModuleStart() override;
+        void ModuleStart() override;
 
         void ModuleShutdown() override;
 
-        unsigned int GetLaunchPriority() override;
+        std::size_t GetLaunchPriority() override;
     };
 
-    NOX_NOT_OPTIMIZE_OUT(CenterModule)
-}   // namespace ares::databus::http::auto_launch
+    POKER_NO_OPTIMIZED(CenterModule)
+}   // namespace poker::databus::http::auto_launch
