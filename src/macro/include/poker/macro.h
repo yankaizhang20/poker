@@ -4,6 +4,7 @@
 
 #pragma once
 
+#include "./macro/arguments.h"
 #include "./macro/concat.h"
 #include "./macro/count.h"
 #include "./macro/invoke.h"
