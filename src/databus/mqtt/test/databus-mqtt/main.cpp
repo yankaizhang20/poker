@@ -11,7 +11,7 @@
 #include "./channel.h"
 
 #include <poker/databus/mqtt.h>
-
+#include <poker/databus/mqtt/module/Center.h>
 
 using namespace poker;
 

@@ -4,23 +4,22 @@
 
 #pragma once
 
-#include <poker/base/Modular.h>
+#include <poker/system.h>
 
 #include "./Center.h"
 
 
 namespace poker::databus::mqtt::auto_launch
 {
-    class CenterModule :
-        public Modular<CenterModule, Center>
+    class CenterModule : public system::Modular< CenterModule, Center >
     {
     protected:
-        bool ModuleStart() override;
+        void ModuleStart() override;
 
         void ModuleShutdown() override;
 
-        unsigned int GetLaunchPriority() override;
+        std::size_t GetLaunchPriority() override;
     };
 
-    NOX_NOT_OPTIMIZE_OUT(CenterModule)
-}
+    POKER_NO_OPTIMIZED(CenterModule)
+}   // namespace poker::databus::mqtt::auto_launch

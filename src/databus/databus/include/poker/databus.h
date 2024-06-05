@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <poker/lock_hide.h>
+#include <poker/thread/lock.h>
 
 #include "./databus/entity/AuxDeleter.h"
 #include "./databus/entity/ServiceChannel.h"
@@ -337,7 +337,7 @@ namespace poker::databus
     /**
      * @brief 辅助管理监听卸载器、服务卸载器，提供统一卸载 API，以及实现析构自动卸载。
      */
-    class Aux : public poker::thread_lock::MutexLock
+    class Aux : public poker::thread::MutexLock
     {
     public:
         Aux &operator+= (AuxDeleter x);

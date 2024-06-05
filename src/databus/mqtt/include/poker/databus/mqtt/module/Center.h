@@ -4,10 +4,9 @@
 
 #pragma once
 
-#include <nox/logger.h>
-#include <nox/thread.h>
-
+#include <poker/param.h>
 #include <poker/serialization.h>
+#include <poker/thread/Loop.h>
 
 #include "../interface/ICore.h"
 
@@ -18,7 +17,7 @@
 
 namespace poker::databus::mqtt
 {
-    class Center : private ICore, private nox::thread::Loop
+    class Center : private ICore, private thread::Loop
     {
     public:
         struct Param
@@ -45,9 +44,6 @@ namespace poker::databus::mqtt
         static bool Read(Param &param);
 
         static bool Write(const Param &param);
-
-    private:
-        nox_static_logging_declaration("mqtt::Center");
 
     public:
         /**
@@ -81,7 +77,7 @@ namespace poker::databus::mqtt
             }
             catch (const std::exception &ec)
             {
-                nox_error "publish fail: " << ec.what();
+                std::cout << "publish fail: " << ec.what();
             }
         }
 
@@ -101,24 +97,23 @@ namespace poker::databus::mqtt
         }
 
         template < class TRequest, class TResponse >
-        nox::expected< TResponse > Call(const std::string &request_topic, const TRequest &request)
+        std::optional< TResponse > Call(const std::string &request_topic, const TRequest &request)
         {
             // 序列化请求数据，并发起调用
-            nox::expected< std::string > response_str_opt =
+            std::optional< std::string > response_str_opt =
                     _caller_center.Call(request_topic, serialization::Encode(request));
 
             // 若得到的响应数据非空，则尝试反序列化它，返回结果。
             if (response_str_opt.has_value())
             {
-                std::optional< TResponse > response_opt =
-                        serialization::Decode< TResponse >(response_str_opt.value().ref());
+                std::optional< TResponse > response_opt = serialization::Decode< TResponse >(response_str_opt.value());
 
                 if (response_opt.has_value())
-                    return nox::expected_value(std::move(response_opt.value()));
+                    return response_opt;
             }
 
             // 若响应数据非法，则返回错误
-            return nox::expected_error();
+            return {};
         }
 
         template < class TRequest, class TResponse >
@@ -131,7 +126,7 @@ namespace poker::databus::mqtt
             // 向服务者中心注册新的服务函数
             return _server_center.Serve(
                     service_topic,
-                    [ server = server ](const std::string &request_str) -> nox::expected< std::string >
+                    [ server = server ](const std::string &request_str) -> std::optional< std::string >
                     {
                         // 反序列化请求数据
                         std::optional< TRequest > request_opt = serialization::Decode< TRequest >(request_str);
@@ -139,9 +134,9 @@ namespace poker::databus::mqtt
                         // 若反序列化成功，且服务函数返回正确结果，则序列化响应数据，并返回；
                         // 否则返回错误。
                         if (TResponse response; request_opt.has_value() and server(request_opt.value(), response))
-                            return nox::expected_value(serialization::Encode(response));
+                            return serialization::Encode(response);
                         else
-                            return nox::expected_error();
+                            return {};
                     });
         }
 
@@ -229,7 +224,14 @@ namespace poker::databus::mqtt
     };
 }   // namespace poker::databus::mqtt
 
-#include <nox/param.h>
 
-nox_param_binding_implementation(poker::databus::mqtt::Center::Param, server_address, response_topic_prefix,
-                                 max_calls_per_channel, max_parallel_serving_threads, call_timeout, reconnect_timeout)
+// clang-format off
+POKER_REFLECT_TYPE(poker::databus::mqtt::Center::Param,
+                    server_address,
+                    response_topic_prefix,
+                    max_calls_per_channel,
+                    max_parallel_serving_threads,
+                    call_timeout,
+                    reconnect_timeout
+)
+// clang-format on

@@ -7,10 +7,9 @@
 
 namespace poker::databus::mqtt::auto_launch
 {
-    bool CenterModule::ModuleStart()
+    void CenterModule::ModuleStart()
     {
         unique_core.Setup();
-        return true;
     }
 
     void CenterModule::ModuleShutdown()
@@ -18,8 +17,8 @@ namespace poker::databus::mqtt::auto_launch
         unique_core.Shutdown();
     }
 
-    unsigned int CenterModule::GetLaunchPriority()
+    std::size_t CenterModule::GetLaunchPriority()
     {
         return 30;
     }
-}
+}   // namespace poker::databus::mqtt::auto_launch
