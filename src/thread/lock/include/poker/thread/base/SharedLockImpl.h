@@ -7,7 +7,7 @@
 #include "./LockImpl.h"
 
 
-namespace poker::thread_lock::details
+namespace poker::thread::details
 {
     template<class TMutex>
     class SharedLockImpl : public LockImpl<TMutex>

@@ -9,19 +9,19 @@
 
 #include <poker/macro.h>
 
-#include "./thread_lock/LockHelper.h"
-#include "./thread_lock/LockImpl.h"
-#include "./thread_lock/SharedLockHelper.h"
-#include "./thread_lock/SharedLockImpl.h"
+#include "./base/LockHelper.h"
+#include "./base/LockImpl.h"
+#include "./base/SharedLockHelper.h"
+#include "./base/SharedLockImpl.h"
 
 
-namespace poker::thread_lock
+namespace poker::thread
 {
     /**
      * 以下的宏是用于多线程加锁的语法糖。
      * @example 继承一个可以被加锁的类
      *
-     * class A : public poker::thread_lock::MutexLock
+     * class A : public poker::thread::MutexLock
      * {
      * public:
      *     void f()
@@ -80,11 +80,11 @@ namespace poker::thread_lock
 
 // 无时限加锁
 #define INNER_LOCKING_1(_lock_) \
-    if constexpr (poker::thread_lock::details::LockHelper POKER_COUNTER_UNIQUE(__lock__)(_lock_); true)
+    if constexpr (poker::thread::details::LockHelper POKER_COUNTER_UNIQUE(__lock__)(_lock_); true)
 
 // 有时限加锁
-#define INNER_LOCKING_2(_lock_, _time_)                                                      \
-    if (poker::thread_lock::details::LockHelper POKER_LINE_UNIQUE(__lock__)(_lock_, _time_); \
+#define INNER_LOCKING_2(_lock_, _time_)                                                 \
+    if (poker::thread::details::LockHelper POKER_LINE_UNIQUE(__lock__)(_lock_, _time_); \
         POKER_LINE_UNIQUE(__lock__).IsOwned())
 
 
@@ -127,11 +127,11 @@ namespace poker::thread_lock
 
 // 无时限读者锁
 #define INNER_READER_LOCKING_1(_lock_) \
-    if constexpr (poker::thread_lock::details::SharedLockHelper POKER_COUNTER_UNIQUE(__lock__)(_lock_); true)
+    if constexpr (poker::thread::details::SharedLockHelper POKER_COUNTER_UNIQUE(__lock__)(_lock_); true)
 
 // 有时限读者锁
 #define INNER_READER_LOCKING_2(_lock_, _time_)                                                     \
-    if (poker::thread_lock::details::SharedLockHelper POKER_LINE_UNIQUE(__lock__)(_lock_, _time_); \
+    if (poker::thread::details::SharedLockHelper POKER_LINE_UNIQUE(__lock__)(_lock_, _time_); \
         POKER_LINE_UNIQUE(__lock__).IsOwned())
 
 /**
@@ -205,7 +205,7 @@ namespace poker::thread_lock
     using RecursiveLock   = details::LockImpl< std::recursive_timed_mutex >;
     using SharedMutexLock = details::SharedLockImpl< std::shared_timed_mutex >;
 
-#define MutexLockable(...)       Lockable(poker::thread_lock::MutexLock, __VA_ARGS__)
-#define RecursiveLockable(...)   Lockable(poker::thread_lock::RecursiveLock, __VA_ARGS__)
-#define SharedMutexLockable(...) Lockable(poker::thread_lock::SharedMutexLock, __VA_ARGS__)
-}   // namespace poker::thread_lock
+#define MutexLockable(...)       Lockable(poker::thread::MutexLock, __VA_ARGS__)
+#define RecursiveLockable(...)   Lockable(poker::thread::RecursiveLock, __VA_ARGS__)
+#define SharedMutexLockable(...) Lockable(poker::thread::SharedMutexLock, __VA_ARGS__)
+}   // namespace poker::thread

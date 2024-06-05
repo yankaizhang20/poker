@@ -7,7 +7,7 @@
 #include <poker/unit/Time.h>
 
 
-namespace poker::thread_lock::details
+namespace poker::thread::details
 {
     template<class TLock>
     class SharedLockHelper
