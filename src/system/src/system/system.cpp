@@ -14,6 +14,9 @@ namespace poker::system
 {
     namespace
     {
+        // 控制进程的结束与否
+        std::atomic_bool is_process_stopped = false;
+
         // 用于通知进程结束
         std::promise< void > wait_closed;
         std::future          is_closed_required = wait_closed.get_future();
@@ -46,6 +49,9 @@ namespace poker::system
 
     void Shutdown()
     {
+        // 标识进程退出
+        is_process_stopped = true;
+
         // 启动中心关闭所有模块
         system::GetLaunchCenter().shutdown();
     }
@@ -55,5 +61,16 @@ namespace poker::system
         is_closed_required.wait();
 
         Shutdown();
+    }
+
+    bool Ok()
+    {
+        return is_process_stopped;
+    }
+
+    void Sleep(const unit::Time &time)
+    {
+        auto us = long(time.Get< pokeru::us >());
+        std::this_thread::sleep_for(std::chrono::microseconds(us));
     }
 }   // namespace poker::system
