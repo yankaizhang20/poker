@@ -7,11 +7,11 @@
 namespace poker::databus_impl
 {
     // 指定 MyServiceChannel 的 Method
-    //    template <>
-    //    struct channel_method< channel::MyServiceChannel >
-    //    {
-    //        using type = databus::http::Post;
-    //    };
+    template <>
+    struct channel_method< channel::MyServiceChannel >
+    {
+        using type = databus::http::Post;
+    };
 
     /**
      * @brief 调用 MyServiceChannel 中的服务过程，发出请求数据，并得到响应数据。

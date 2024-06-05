@@ -3,6 +3,6 @@
 # （具体实现均需由数据定义者实现）
 # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
 
-#poker_add_protobuf(serialization-basic_proto)
+poker_add_protobuf(serialization-basic_proto)
 
 poker_add_library(databus_serialization DEPENDS serialization-basic_proto macro)

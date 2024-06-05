@@ -15,7 +15,7 @@ namespace poker::databus_impl::http
 {
     inline decltype(auto) Center()
     {
-        poker::pattern::GetGlobalUnique< databus::http::Center >::Ref();
+        return poker::pattern::GetGlobalUnique< databus::http::Center >::Ref();
     };
 
     /**

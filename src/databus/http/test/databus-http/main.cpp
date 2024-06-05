@@ -5,26 +5,24 @@
 #include <iostream>
 #include <thread>
 
-#include <poker/core.h>
 #include <poker/databus.h>
+#include <poker/system.h>
 
 #include "./channel.h"
-
-#include <poker/databus/http.h>
 
 
 using namespace poker;
 
 int main(int argc, char **argv)
 {
-    Init();
+    system::Init();
 
     // 等待 http 监听启动（仅为异步注册测试）
     std::this_thread::sleep_for(std::chrono::seconds(3));
 
     // 配置通道数据
     databus_impl::channel_config< channel::MyServiceChannel > = {
-            .ip = "localhost", .port = 8'080, .request_target = "/"};
+            .ip = "localhost", .port = 65'534, .request_target = "/"};
 
     // 注册服务
     databus::Serve< channel::MyServiceChannel >(

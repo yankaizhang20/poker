@@ -1,5 +1,5 @@
 syntax = "proto3";
-package poker::databus.serialization.proto;
+package poker.databus.serialization.proto;
 
 
 message Bool

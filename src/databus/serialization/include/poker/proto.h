@@ -7,7 +7,7 @@
 #include <poker/macro.h>
 
 
-namespace ares::proto
+namespace poker::proto
 {
     template < class TProtoType, class TOriginalType >
     extern TProtoType To(const TOriginalType &src);
@@ -38,7 +38,7 @@ namespace ares::proto
     {
         TProtoType src;
         if (not src_any.UnpackTo(&src))
-            nox_no_impl();
+            poker_no_impl();
         return From< TOriginalType >(src);
     }
 
@@ -47,7 +47,7 @@ namespace ares::proto
     {
         TProtoType src;
         if (not src_any.UnpackTo(&src))
-            nox_no_impl();
+            poker_no_impl();
         dst = From< TOriginalType >(src);
     }
 
@@ -79,4 +79,4 @@ namespace ares::proto
         From(dst, src);                                                       \
         return dst;                                                           \
     }
-}   // namespace ares::proto
+}   // namespace poker::proto
