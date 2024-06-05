@@ -19,8 +19,53 @@ namespace poker::param::backend
         value = yaml.as< std::remove_reference_t< decltype(value) > >();                                   \
     }
 
-        POKER_VALUE_REFLECT_TYPE(DECLARE_READ_FUNC)
+        POKER_BASIC_VALUE_REFLECT_TYPE(DECLARE_READ_FUNC)
 #undef DECLARE_READ_FUNC
+
+
+        static void CheckTag(const YAML::Node &yaml, reflect::ValueType type)
+        {
+            if (yaml.Tag() != GetFullValueTypeName(type))
+                throw std::runtime_error("wrong yaml tag");
+        }
+
+#define BEGIN_READ_UNIT_SYSTEM(Type)                            \
+    static void Read(const YAML::Node &yaml, unit::Type &value) \
+    {                                                           \
+        CheckTag(yaml, reflect::ValueType::Type);               \
+                                                                \
+        std::string unit_name;                                  \
+        double      unit_value;                                 \
+                                                                \
+        Read(yaml[ "unit" ], unit_name);                        \
+        Read(yaml[ "value" ], unit_value);
+
+#define READ_UNIT(unit)                        \
+    if (unit_name == #unit)                    \
+    {                                          \
+        value.Set< pokeru::unit >(unit_value); \
+        return;                                \
+    }
+
+#define END_READ_UNIT_SYSTEM(Type)                                                                     \
+    throw std::runtime_error("wrong unit name for " + GetFullValueTypeName(reflect::ValueType::Type)); \
+    }
+
+#define READ_UNIT_SYSTEM(Type, ...) \
+    BEGIN_READ_UNIT_SYSTEM(Type)    \
+    __VA_ARGS__                     \
+    END_READ_UNIT_SYSTEM(Type)
+
+        READ_UNIT_SYSTEM(Angle, POKER_INVOKE(READ_UNIT, deg, rad))
+        READ_UNIT_SYSTEM(Distance, POKER_INVOKE(READ_UNIT, m, km, mi))
+        READ_UNIT_SYSTEM(Time, POKER_INVOKE(READ_UNIT, sec, min, hour, day, week, ms, us))
+        READ_UNIT_SYSTEM(Velocity, POKER_INVOKE(READ_UNIT, mps, kmh, kph, mph))
+        READ_UNIT_SYSTEM(Weight, POKER_INVOKE(READ_UNIT, kg, g))
+
+#undef BEGIN_READ_UNIT_SYSTEM
+#undef READ_UNIT
+#undef END_READ_UNIT_SYSTEM
+#undef READ_UNIT_SYSTEM
 
 #define DECLARE_WRITE_FUNC(_type_)                                                                          \
     static void Write(YAML::Node &yaml, const reflect::trait::value_t< reflect::ValueType::_type_ > &value) \
@@ -28,9 +73,25 @@ namespace poker::param::backend
         yaml = value;                                                                                       \
     }
 
-        POKER_VALUE_REFLECT_TYPE(DECLARE_WRITE_FUNC)
+        POKER_BASIC_VALUE_REFLECT_TYPE(DECLARE_WRITE_FUNC)
 #undef DECLARE_WRITE_FUNC
+
+#define WRITE_UNIT(_Type_, _default_unit_)                             \
+    static void Write(YAML::Node &yaml, const unit::_Type_ &value)     \
+    {                                                                  \
+        yaml.SetTag(GetFullValueTypeName(reflect::ValueType::_Type_)); \
+        yaml[ "value" ] = value.Get< pokeru::_default_unit_ >();       \
+        yaml[ "unit" ]  = #_default_unit_;                             \
+    }
+
+        WRITE_UNIT(Angle, deg)
+        WRITE_UNIT(Distance, m)
+        WRITE_UNIT(Time, sec)
+        WRITE_UNIT(Velocity, kmh)
+        WRITE_UNIT(Weight, kg)
+#undef WRITE_UNIT
     }   // namespace details
+
 
     void YamlEngine::SetFileRoot(const std::string &root)
     {

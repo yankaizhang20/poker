@@ -18,11 +18,11 @@
  *
  * POKER_REFLECT_TYPE(Object, a, b)
  */
-#define POKER_REFLECT_TYPE(Type, ...)                                              \
-    template <>                                                                    \
-    void poker::reflect::Bind< Type >(Type & obj, poker::reflect::TypeView & view) \
-    {                                                                              \
-        POKER_INVOKE(INNER_ADD_ONE_FIELD, __VA_ARGS__)                             \
+#define POKER_REFLECT_TYPE(Type, ...)                                                     \
+    template <>                                                                           \
+    inline void poker::reflect::Bind< Type >(Type & obj, poker::reflect::TypeView & view) \
+    {                                                                                     \
+        POKER_INVOKE(INNER_ADD_ONE_FIELD, __VA_ARGS__)                                    \
     }
 
 #define INNER_ADD_ONE_FIELD(_field_) view.AddField(#_field_, obj._field_);
