@@ -129,4 +129,18 @@ namespace poker::thread
         SetMainFunction(std::move(func));
         SetExceptionHandler(std::move(func_exception));
     }
+
+    TaskGroup &TaskGroup::operator+= (std::shared_ptr< ITask > task_ptr)
+    {
+        if (task_ptr != nullptr)
+            _tasks.insert(std::move(task_ptr));
+
+        return *this;
+    }
+
+    void TaskGroup::Wait()
+    {
+        for (const std::shared_ptr< ITask > &ptr : _tasks)
+            ptr->Wait();
+    }
 }   // namespace poker::thread

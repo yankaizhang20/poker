@@ -6,6 +6,7 @@
 
 #include <functional>
 #include <future>
+#include <set>
 
 #include <poker/thread/condition.h>
 #include <poker/thread/lock.h>
@@ -190,5 +191,16 @@ namespace poker::thread
     private:
         std::promise< T > _result_promise;
         std::future< T >  _result_future;
+    };
+
+    class TaskGroup
+    {
+    public:
+        TaskGroup &operator+= (std::shared_ptr< ITask > task_ptr);
+
+        void Wait();
+
+    private:
+        std::set< std::shared_ptr< ITask > > _tasks;
     };
 }   // namespace poker::thread
