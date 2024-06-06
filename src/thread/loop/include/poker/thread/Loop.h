@@ -6,7 +6,7 @@
 
 #include <functional>
 
-#include <poker/thread/Condition.h>
+#include <poker/thread/condition.h>
 #include <poker/unit.h>
 
 

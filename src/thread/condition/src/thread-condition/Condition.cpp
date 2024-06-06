@@ -2,7 +2,7 @@
 // Created by zyk on 24-6-5.
 //
 
-#include "poker/thread/Condition.h"
+#include "poker/thread/condition/Condition.h"
 
 
 namespace poker::thread
