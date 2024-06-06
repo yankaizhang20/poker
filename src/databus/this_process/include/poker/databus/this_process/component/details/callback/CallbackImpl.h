@@ -110,7 +110,7 @@ namespace poker::databus::details
          */
         void AddCallback(std::size_t n, Handler handler)
         {
-            Locking(_handlers) _handlers.push_back(n, std::move(handler));
+            Locking(_handlers) _handlers[ n ] = std::move(handler);
         }
 
         /**
@@ -129,7 +129,7 @@ namespace poker::databus::details
          */
         void RemoveCallback(std::size_t n)
         {
-            Locking(_handlers) _handlers.erase_by_key(n);
+            Locking(_handlers) _handlers.erase(n);
         }
 
         /**
@@ -183,11 +183,13 @@ namespace poker::databus::details
             std::future< CallbackResult< TRes > >    future = promise_wrapper.promise.get_future();
 
             _async_call_pool.Add(
-                    [ this, &promise_wrapper, args = std::make_tuple(std::forward< TArgs >(args)...) ]()
+                    [ this, promise_wrapper = std::move(promise_wrapper),
+                      args = std::make_tuple(std::forward< TArgs >(args)...) ]()
                     {
-                        return std::apply([ this, &promise_wrapper ](auto &&...args)
-                                          { MainAsyncCall(promise_wrapper, std::forward< decltype(args) >(args)...); },
-                                          std::move(args));
+                        return std::apply(
+                                [ this, promise_wrapper = std::move(promise_wrapper) ](auto &&...args)
+                                { MainAsyncCall(std::move(promise_wrapper), std::forward< decltype(args) >(args)...); },
+                                std::move(args));
                     });
 
             return future;
@@ -324,10 +326,20 @@ namespace poker::databus::details
             // 拷贝回调处理函数，防止时间锁定回调函数，使用户设置回调函数的接口被长时间阻塞
             HandlerArray handlers;
 
-            Locking(_handlers) handlers = (HandlerArray &) _handlers;
+            // 记录回调索引
+            std::vector< std::size_t > handlers_index;
 
-            // 创建空结果
-            CallbackResult< TRes > result = CreateEmptyCallbackResult(handlers.keys());
+            Locking(_handlers)
+            {
+                handlers = (HandlerArray &) _handlers;
+
+                for (const auto &[ index, _ ] : handlers)
+                {
+                    handlers_index.emplace_back(index);
+                }
+            }
+
+            CallbackResult< TRes > result = CreateEmptyCallbackResult(handlers_index);
 
             if (_parallel)
             {
