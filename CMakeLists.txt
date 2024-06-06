@@ -14,6 +14,9 @@ poker_project()
 
 set(CMAKE_INSTALL_PREFIX ${CMAKE_CURRENT_LIST_DIR}/poker_install)
 
+# 第三方库
+poker_add_subdirectories(3rd)
+
 # 源代码
 poker_add_subdirectories(src)
 
