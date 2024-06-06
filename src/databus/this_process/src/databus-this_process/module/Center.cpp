@@ -7,49 +7,53 @@
 
 namespace poker::databus::this_process
 {
-    Center::Center()
-    {
-        _listeners.SetUnlimitedSize();
-        _servers.SetUnlimitedSize();
-    }
-
     void Center::RemoveCallback(const std::string &topic, std::size_t callback_number)
     {
-        // 取出指定的回调管理器，并上锁
-        AnyTypeListenerChannel *ptr = _listeners.DataPtr(topic);
+        ReaderLocking(_listeners_keeper)
+        {
+            if (_listeners.find(topic) == _listeners.end())
+            {
+                return;
+            }
+        }
 
-        if (ptr == nullptr)
-            return;
-
-        // 删除对应编号的回调器
-        ptr->RemoveCallback(callback_number);
-
-        // 释放该回调管理器的数据锁
-        _listeners.ReleasePtr(topic);
+        WriterLocking(_listeners_keeper)
+        {
+            // 删除对应编号的回调器
+            _listeners[ topic ].RemoveCallback(callback_number);
+        }
     }
 
     void Center::RemoveServer(const std::string &topic)
     {
-        // 取出指定服务管理器，并上锁
-        ServiceWrapper *ptr = _servers.DataPtr(topic);
+        ReaderLocking(_servers_keeper)
+        {
+            if (_servers.find(topic) == _servers.end())
+            {
+                return;
+            }
+        }
 
-        if (ptr == nullptr)
-            return;
-
-        // 卸载服务器
-        ptr->UnsetService();
-
-        // 释放数据锁
-        _servers.ReleasePtr(topic);
+        WriterLocking(_servers_keeper)
+        {
+            // 卸载服务器
+            _servers[ topic ].UnsetService();
+        }
     }
 
     void Center::TopicOffline(const std::string &channel)
     {
-        _listeners.Delete(channel);
+        WriterLocking(_listeners_keeper)
+        {
+            _listeners.erase(channel);
+        }
     }
 
     void Center::ServiceOffline(const std::string &channel)
     {
-        _servers.Delete(channel);
+        WriterLocking(_servers_keeper)
+        {
+            _servers.erase(channel);
+        }
     }
 }   // namespace poker::databus::this_process
