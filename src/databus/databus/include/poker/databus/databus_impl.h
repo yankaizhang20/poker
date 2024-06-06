@@ -8,8 +8,8 @@
 /**
  * @brief 创建指定的域内 topic 发送实现
  */
-#define poker_topic_impl_send(Impl, TopicChannel)                                                            \
-    namespace poker::databus_impl                                                                            \
+#define poker_topic_impl_send(Impl, TopicChannel)                                                           \
+    namespace poker::databus_impl                                                                           \
     {                                                                                                       \
         template <>                                                                                         \
         void Send< TopicChannel::MessageType, TopicChannel::Tag >(const std::string               &channel, \
@@ -18,6 +18,7 @@
             Impl::Send(channel, data);                                                                      \
         }                                                                                                   \
     }
+
 
 /**
  * @brief 创建指定的域内 topic 实现。
@@ -43,8 +44,9 @@
  *     return 0;
  * }
  */
-#define poker_topic_impl(Impl, TopicChannel)                                                      \
-    poker_topic_impl_send(Impl, TopicChannel) namespace poker::databus_impl                        \
+#define poker_topic_impl(Impl, TopicChannel)                                                     \
+    poker_topic_impl_send(Impl, TopicChannel)                                                    \
+    namespace poker::databus_impl                                                                \
     {                                                                                            \
         template <>                                                                              \
         AuxDeleter Listen< TopicChannel::MessageType, TopicChannel::Tag >(                       \
@@ -60,6 +62,7 @@
         }                                                                                        \
     }
 
+
 /**
  * @brief 创建指定的域内 service 实现。
  * @example
@@ -71,11 +74,11 @@
  *
  * ...
  */
-#define poker_service_impl(Impl, ServiceChannel)                                                             \
-    namespace poker::databus_impl                                                                            \
+#define poker_service_impl(Impl, ServiceChannel)                                                            \
+    namespace poker::databus_impl                                                                           \
     {                                                                                                       \
         template <>                                                                                         \
-        nox::expected< ServiceChannel::ResponseType >                                                       \
+        std::optional< ServiceChannel::ResponseType >                                                       \
         Call< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >(             \
                 const std::string &channel, const ServiceChannel::RequestType &req)                         \
         {                                                                                                   \
@@ -97,8 +100,9 @@
         }                                                                                                   \
     }
 
-#define poker_service_impl_by_http(Method, ServiceChannel)                                                          \
-    namespace poker::databus_impl                                                                                   \
+
+#define poker_service_impl_by_http(Method, ServiceChannel)                                                         \
+    namespace poker::databus_impl                                                                                  \
     {                                                                                                              \
         template <>                                                                                                \
         struct channel_method< ServiceChannel >                                                                    \
@@ -107,7 +111,7 @@
         };                                                                                                         \
                                                                                                                    \
         template <>                                                                                                \
-        nox::expected< ServiceChannel::ResponseType >                                                              \
+        std::optional< ServiceChannel::ResponseType >                                                              \
         Call< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >(                    \
                 const databus::XChannelType &channel, const ServiceChannel::RequestType &req)                      \
         {                                                                                                          \

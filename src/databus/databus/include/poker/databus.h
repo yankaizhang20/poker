@@ -12,6 +12,8 @@
 #include "./databus/entity/XServiceChannel.h"
 #include "./databus/extern_impl.h"
 
+#include "./databus/databus_impl.h"
+
 
 /**
  * @brief databus 为模块间通信的中间件，它仅提供了统一的通信接口，但没有定义具体的通信行为，
