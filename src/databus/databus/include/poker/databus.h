@@ -9,7 +9,6 @@
 #include "./databus/entity/AuxDeleter.h"
 #include "./databus/entity/ServiceChannel.h"
 #include "./databus/entity/TopicChannel.h"
-#include "./databus/entity/XServiceChannel.h"
 #include "./databus/extern_impl.h"
 
 #include "./databus/databus_impl.h"
@@ -182,7 +181,7 @@ namespace poker::databus
     void Send(const typename TopicChannel::MessageType &data)
     {
         databus_impl::Send< typename TopicChannel::MessageType, typename TopicChannel::Tag >(
-                details::ChannelImpl<>::value< TopicChannel >(), data);
+                databus_impl::channel_config< TopicChannel >, data);
     }
 
     /**
@@ -223,7 +222,7 @@ namespace poker::databus
     {
         if (handler != nullptr)
             return databus_impl::Listen< typename TopicChannel::MessageType, typename TopicChannel::Tag >(
-                    details::ChannelImpl<>::value< TopicChannel >(), handler);
+                    databus_impl::channel_config< TopicChannel >, handler);
         else
             return {};
     }
@@ -262,8 +261,7 @@ namespace poker::databus
     std::optional< typename ServiceChannel::ResponseType > Call(const typename ServiceChannel::RequestType &req)
     {
         return databus_impl::Call< typename ServiceChannel::RequestType, typename ServiceChannel::ResponseType,
-                                   typename ServiceChannel::Tag >(
-                details::ChannelImpl< typename ServiceChannel::ImplType >::template value< ServiceChannel >(), req);
+                                   typename ServiceChannel::Tag >(databus_impl::channel_config< ServiceChannel >, req);
     }
 
     /**
@@ -319,9 +317,8 @@ namespace poker::databus
     {
         if (server != nullptr)
             return databus_impl::Serve< typename ServiceChannel::RequestType, typename ServiceChannel::ResponseType,
-                                        typename ServiceChannel::Tag >(
-                    details::ChannelImpl< typename ServiceChannel::ImplType >::template value< ServiceChannel >(),
-                    server);
+                                        typename ServiceChannel::Tag >(databus_impl::channel_config< ServiceChannel >,
+                                                                       server);
         else
             return {};
     }
@@ -333,7 +330,7 @@ namespace poker::databus
     template < class Channel >
     void Offline()
     {
-        databus_impl::Offline< Channel >(details::ChannelImpl<>::value< Channel >());
+        databus_impl::Offline< Channel >(databus_impl::channel_config< Channel >);
     }
 
     /**

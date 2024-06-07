@@ -48,6 +48,5 @@ namespace poker::databus
         using Tag          = TTag;
         using RequestType  = TRequest;
         using ResponseType = TResponse;
-        using ImplType     = std::string;
     };
 }   // namespace poker::databus

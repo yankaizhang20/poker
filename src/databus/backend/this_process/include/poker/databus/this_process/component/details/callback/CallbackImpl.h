@@ -48,6 +48,11 @@ namespace poker::databus::details
          */
         using ResultHandler = std::function< void(const CallbackResult< TRes > &) >;
 
+        /**
+         * @brief 全部回调函数
+         */
+        using HandlerArray = std::map< std::size_t, Handler >;
+
     public:
         /**
          * @brief 设置最大的异步 Call 数量，配置的是线程池大小，当并发 Call 数量大于该值时，多余的 Call 任务将被延后。
@@ -110,7 +115,7 @@ namespace poker::databus::details
          */
         void AddCallback(std::size_t n, Handler handler)
         {
-            Locking(_handlers) _handlers[ n ] = std::move(handler);
+            WriterLocking(_handlers_keeper) _handlers[ n ] = std::move(handler);
         }
 
         /**
@@ -129,7 +134,7 @@ namespace poker::databus::details
          */
         void RemoveCallback(std::size_t n)
         {
-            Locking(_handlers) _handlers.erase(n);
+            WriterLocking(_handlers_keeper) _handlers.erase(n);
         }
 
         /**
@@ -146,7 +151,7 @@ namespace poker::databus::details
          */
         void RemoveAllCallbacks()
         {
-            Locking(_handlers) _handlers.clear();
+            WriterLocking(_handlers_keeper) _handlers.clear();
         }
 
         /**
@@ -155,7 +160,7 @@ namespace poker::databus::details
          */
         void SetResultHandler(ResultHandler handler)
         {
-            Locking(_result_handler) _result_handler = std::move(handler);
+            Locking(_result_handler_keeper) _result_handler = std::move(handler);
         }
 
     public:
@@ -268,7 +273,10 @@ namespace poker::databus::details
         [[nodiscard]]
         size_t Size() const
         {
-            return _handlers.size();
+            ReaderLocking(_handlers_keeper)
+            {
+                return _handlers.size();
+            }
         }
 
         /**
@@ -277,7 +285,10 @@ namespace poker::databus::details
         [[nodiscard]]
         bool Empty() const
         {
-            return _handlers.empty();
+            ReaderLocking(_handlers_keeper)
+            {
+                return _handlers.empty();
+            }
         }
 
         /**
@@ -329,14 +340,14 @@ namespace poker::databus::details
             // 记录回调索引
             std::vector< std::size_t > handlers_index;
 
-            Locking(_handlers)
+            ReaderLocking(_handlers_keeper)
             {
-                handlers = (HandlerArray &) _handlers;
+                handlers = _handlers;
+            }
 
-                for (const auto &[ index, _ ] : handlers)
-                {
-                    handlers_index.emplace_back(index);
-                }
+            for (const auto &[ index, _ ] : handlers)
+            {
+                handlers_index.emplace_back(index);
             }
 
             CallbackResult< TRes > result = CreateEmptyCallbackResult(handlers_index);
@@ -375,7 +386,7 @@ namespace poker::databus::details
             // 拷贝回调结果的处理函数，并调用它
             ResultHandler result_handler;
 
-            Locking(_result_handler) result_handler = (ResultHandler &) _result_handler;
+            Locking(_result_handler_keeper) result_handler = (ResultHandler &) _result_handler;
 
             if (result_handler)
                 result_handler(result);
@@ -408,13 +419,12 @@ namespace poker::databus::details
         thread::MutexLock _calling_count_lock;
         int               _calling_count = 0;
 
-        // 用于并发调用用户
-
         // 用户设置的回调函数，使用有序的编号进行管理
-        using HandlerArray = std::map< std::size_t, Handler >;
-        MutexLockable(HandlerArray) _handlers;
+        thread::SharedMutexLock _handlers_keeper;
+        HandlerArray            _handlers;
 
         // 用户回调函数返回结果的回调处理函数
-        MutexLockable(ResultHandler) _result_handler;
+        thread::MutexLock _result_handler_keeper;
+        ResultHandler     _result_handler;
     };
 }   // namespace poker::databus::details

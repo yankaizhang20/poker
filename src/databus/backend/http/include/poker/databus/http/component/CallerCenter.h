@@ -11,7 +11,6 @@
 #include <poker/databus.h>
 #include <poker/serialization.h>
 
-#include "../entity/Method.h"
 #include "../interface/ParamRequest.h"
 #include "./detials/httplib_safe.h"
 #include "./detials/thread_pool.h"
@@ -50,10 +49,22 @@ namespace poker::databus::http
             _thread_pool.ShutDown();
         }
 
-        template < class TMethod, class TRequest, class TResponse >
-        std::optional< TResponse > Call(const XChannelType &channel, const TRequest &req)
+        template < class TRequest, class TResponse >
+        std::optional< TResponse > Call(const ChannelConfigHttp &channel, const TRequest &req)
         {
-            return InnerCall< TRequest, TResponse >(channel, req, TMethod());
+            switch (channel.method)
+            {
+#define DISPATCH_CALL(_TYPE_) \
+    case Method::_TYPE_:      \
+        return InnerCall< TRequest, TResponse >(channel, req, _TYPE_());
+
+                POKER_DATABUS_ALL_HTTP_METHOD(DISPATCH_CALL)
+
+#undef DISPATCH_CALL
+
+                default:
+                    poker_no_impl("undefined http method");
+            }
         }
 
     protected:
@@ -61,13 +72,13 @@ namespace poker::databus::http
          * @brief 未指定 method 时的默认处理
          */
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Method method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &req, Method method_tag)
         {
             return InnerCall< TRequest, TResponse >(channel, req, Post());
         }
 
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Get method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &req, Get method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -105,7 +116,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Post method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &req, Post method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -128,7 +139,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Patch method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &req, Patch method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -151,7 +162,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &, Delete method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &, Delete method_tag)
         {
             // 创建任务
             RequestTask get_task(
@@ -171,7 +182,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        std::optional< TResponse > InnerCall(const XChannelType &channel, const TRequest &req, Options method_tag)
+        std::optional< TResponse > InnerCall(const ChannelConfigHttp &channel, const TRequest &req, Options method_tag)
         {
             // 创建任务
             RequestTask get_task(

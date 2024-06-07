@@ -14,7 +14,6 @@
 #include <poker/param.h>
 #include <poker/serialization.h>
 
-#include "../entity/Method.h"
 #include "./detials/httplib_safe.h"
 
 
@@ -66,28 +65,39 @@ namespace poker::databus::http
         {
         }
 
-        template < class TMethod, class TRequest, class TResponse >
-        void Serve(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server)
+        template < class TRequest, class TResponse >
+        void Serve(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server)
         {
-            InnerServe< TRequest, TResponse >(channel, std::move(server), TMethod {});
+            switch (channel.method)
+            {
+#define DISPATCH_SERVICE(_TYPE_) \
+    case Method::_TYPE_:         \
+        return InnerServe< TRequest, TResponse >(channel, server, _TYPE_());
+
+                POKER_DATABUS_ALL_HTTP_METHOD(DISPATCH_SERVICE)
+
+#undef DISPATCH_SERVICE
+
+                default:
+                    poker_no_impl("undefined http method");
+            }
         }
 
-        template < class TMethod >
-        void Offline(const XChannelType &channel)
+        void Offline(const ChannelConfigHttp &channel)
         {
-            poker_no_impl("不支持的服务卸载");
+            std::cout << "http 暂不支持服务卸载" << std::endl;
         }
 
     protected:
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Method &method_tag)
         {
             InnerServe< TRequest, TResponse >(channel, server, Post());
         }
 
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Get &method_tag)
         {
             _server->Get(channel.request_target,
@@ -96,7 +106,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Post &method_tag)
         {
             _server->Post(channel.request_target,
@@ -105,7 +115,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Patch &method_tag)
         {
             _server->Patch(channel.request_target,
@@ -114,7 +124,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Delete &method_tag)
         {
             _server->Delete(channel.request_target, [ server = std::move(server), this ](const ::httplib::Request &req,
@@ -123,7 +133,7 @@ namespace poker::databus::http
         }
 
         template < class TRequest, class TResponse >
-        void InnerServe(const XChannelType &channel, std::function< bool(const TRequest &, TResponse &) > server,
+        void InnerServe(const ChannelConfigHttp &channel, std::function< bool(const TRequest &, TResponse &) > server,
                         const Options &method_tag)
         {
             _server->Options(channel.request_target, [ server = std::move(server), this ](const ::httplib::Request &req,

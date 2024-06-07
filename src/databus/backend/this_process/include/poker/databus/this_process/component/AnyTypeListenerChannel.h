@@ -68,7 +68,7 @@ namespace poker::databus
         std::optional< std::size_t > AddCallback(Handler< T > handler)
         try
         {
-            std::size_t callback_number = ++_callback_unique_number;
+            std::size_t callback_number = _callback_unique_number++;
 
             GetContext< T >().callback.AddCallback(callback_number, std::move(handler));
 

@@ -38,23 +38,23 @@ namespace poker::databus::http
         void Shutdown();
 
     public:
-        template < class TMethod, class TRequest, class TResponse >
-        AuxDeleter Serve(const XChannelType &channel, Server< TRequest, TResponse > server)
+        template < class TRequest, class TResponse >
+        AuxDeleter Serve(const ChannelConfigHttp &channel, Server< TRequest, TResponse > server)
         {
-            _server_center->Serve< TMethod, TRequest, TResponse >(channel, std::move(server));
-            return AuxDeleter {.deleter_caller = [ this, &channel ]() { Offline< TMethod >(channel); }};
+            _server_center->Serve< TRequest, TResponse >(channel, std::move(server));
+
+            return AuxDeleter {.deleter_caller = [ this, &channel ]() { Offline(channel); }};
         }
 
-        template < class TMethod, class TRequest, class TResponse >
-        std::optional< TResponse > Call(const XChannelType &channel, const TRequest &req)
+        template < class TRequest, class TResponse >
+        std::optional< TResponse > Call(const ChannelConfigHttp &channel, const TRequest &req)
         {
-            return _caller_center->Call< TMethod, TRequest, TResponse >(channel, req);
+            return _caller_center->Call< TRequest, TResponse >(channel, req);
         }
 
-        template < class TMethod >
-        void Offline(const XChannelType &channel)
+        void Offline(const ChannelConfigHttp &channel)
         {
-            return _server_center->Offline< TMethod >(channel);
+            return _server_center->Offline(channel);
         }
 
     private:

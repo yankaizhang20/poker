@@ -20,35 +20,35 @@ namespace poker::databus_impl::this_process
     }
 
     template < class T >
-    void Send(const std::string &channel, const T &data)
+    void Send(const databus::ChannelConfigBase &channel, const T &data)
     {
         Center().Send(channel, data);
     }
 
     template < class T >
-    AuxDeleter Listen(const std::string &channel, const databus::Handler< T > &handler)
+    AuxDeleter Listen(const databus::ChannelConfigBase &channel, const databus::Handler< T > &handler)
     {
         return Center().Listen(channel, handler);
     }
 
     template < class Request, class Response >
-    std::optional< Response > Call(const std::string &channel, const Request &req)
+    std::optional< Response > Call(const databus::ChannelConfigBase &channel, const Request &req)
     {
         return Center().Call< Request, Response >(channel, req);
     }
 
     template < class Request, class Response >
-    AuxDeleter Serve(const std::string &channel, const databus::Server< Request, Response > &server)
+    AuxDeleter Serve(const databus::ChannelConfigBase &channel, const databus::Server< Request, Response > &server)
     {
         return Center().Serve(channel, server);
     }
 
-    inline void TopicOffline(const std::string &channel)
+    inline void TopicOffline(const databus::ChannelConfigBase &channel)
     {
         Center().TopicOffline(channel);
     }
 
-    inline void ServiceOffline(const std::string &channel)
+    inline void ServiceOffline(const databus::ChannelConfigBase &channel)
     {
         Center().ServiceOffline(channel);
     }

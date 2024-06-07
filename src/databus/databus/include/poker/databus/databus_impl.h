@@ -12,7 +12,7 @@
     namespace poker::databus_impl                                                                           \
     {                                                                                                       \
         template <>                                                                                         \
-        void Send< TopicChannel::MessageType, TopicChannel::Tag >(const std::string               &channel, \
+        void Send< TopicChannel::MessageType, TopicChannel::Tag >(const databus::ChannelConfig    &channel, \
                                                                   const TopicChannel::MessageType &data)    \
         {                                                                                                   \
             Impl::Send(channel, data);                                                                      \
@@ -44,22 +44,21 @@
  *     return 0;
  * }
  */
-#define poker_topic_impl(Impl, TopicChannel)                                                     \
-    poker_topic_impl_send(Impl, TopicChannel)                                                    \
-    namespace poker::databus_impl                                                                \
-    {                                                                                            \
-        template <>                                                                              \
-        AuxDeleter Listen< TopicChannel::MessageType, TopicChannel::Tag >(                       \
-                const std::string &channel, const Handler< TopicChannel::MessageType > &handler) \
-        {                                                                                        \
-            return Impl::Listen(channel, handler);                                               \
-        }                                                                                        \
-                                                                                                 \
-        template <>                                                                              \
-        void Offline< TopicChannel >(const std::string &channel)                                 \
-        {                                                                                        \
-            Impl::TopicOffline(channel);                                                         \
-        }                                                                                        \
+#define poker_topic_impl(Impl, TopicChannel)                                                                \
+    poker_topic_impl_send(Impl, TopicChannel) namespace poker::databus_impl                                 \
+    {                                                                                                       \
+        template <>                                                                                         \
+        AuxDeleter Listen< TopicChannel::MessageType, TopicChannel::Tag >(                                  \
+                const databus::ChannelConfig &channel, const Handler< TopicChannel::MessageType > &handler) \
+        {                                                                                                   \
+            return Impl::Listen(channel, handler);                                                          \
+        }                                                                                                   \
+                                                                                                            \
+        template <>                                                                                         \
+        void Offline< TopicChannel >(const databus::ChannelConfig &channel)                                 \
+        {                                                                                                   \
+            Impl::TopicOffline(channel);                                                                    \
+        }                                                                                                   \
     }
 
 
@@ -80,56 +79,22 @@
         template <>                                                                                         \
         std::optional< ServiceChannel::ResponseType >                                                       \
         Call< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >(             \
-                const std::string &channel, const ServiceChannel::RequestType &req)                         \
+                const databus::ChannelConfig &channel, const ServiceChannel::RequestType &req)              \
         {                                                                                                   \
             return Impl::Call< ServiceChannel::RequestType, ServiceChannel::ResponseType >(channel, req);   \
         }                                                                                                   \
                                                                                                             \
         template <>                                                                                         \
         AuxDeleter Serve< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >( \
-                const std::string                                                         &channel,         \
+                const databus::ChannelConfig                                              &channel,         \
                 const Server< ServiceChannel::RequestType, ServiceChannel::ResponseType > &server)          \
         {                                                                                                   \
             return Impl::Serve(channel, server);                                                            \
         }                                                                                                   \
                                                                                                             \
         template <>                                                                                         \
-        void Offline< ServiceChannel >(const std::string &channel)                                          \
+        void Offline< ServiceChannel >(const databus::ChannelConfig &channel)                               \
         {                                                                                                   \
             Impl::ServiceOffline(channel);                                                                  \
         }                                                                                                   \
-    }
-
-
-#define poker_service_impl_by_http(Method, ServiceChannel)                                                         \
-    namespace poker::databus_impl                                                                                  \
-    {                                                                                                              \
-        template <>                                                                                                \
-        struct channel_method< ServiceChannel >                                                                    \
-        {                                                                                                          \
-            using type = databus::http::Method;                                                                    \
-        };                                                                                                         \
-                                                                                                                   \
-        template <>                                                                                                \
-        std::optional< ServiceChannel::ResponseType >                                                              \
-        Call< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >(                    \
-                const databus::XChannelType &channel, const ServiceChannel::RequestType &req)                      \
-        {                                                                                                          \
-            return databus_impl::http::Call< channel_method< ServiceChannel >::type, ServiceChannel::RequestType,  \
-                                             ServiceChannel::ResponseType >(channel, req);                         \
-        }                                                                                                          \
-                                                                                                                   \
-        template <>                                                                                                \
-        AuxDeleter Serve< ServiceChannel::RequestType, ServiceChannel::ResponseType, ServiceChannel::Tag >(        \
-                const databus::XChannelType                                               &channel,                \
-                const Server< ServiceChannel::RequestType, ServiceChannel::ResponseType > &server)                 \
-        {                                                                                                          \
-            return databus_impl::http::Serve< channel_method< ServiceChannel >::type, ServiceChannel::RequestType, \
-                                              ServiceChannel::ResponseType >(channel, server);                     \
-        }                                                                                                          \
-        template <>                                                                                                \
-        void Offline< ServiceChannel >(const databus::XChannelType &channel)                                       \
-        {                                                                                                          \
-            databus_impl::http::Offline< channel_method< ServiceChannel >::type >(channel);                        \
-        }                                                                                                          \
     }

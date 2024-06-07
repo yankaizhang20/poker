@@ -21,27 +21,26 @@ namespace poker::databus_impl::http
     /**
      * @brief 调用指定 http 通道中的服务过程
      */
-    template < class TMethod, class TRequest, class TResponse >
-    std::optional< TResponse > Call(const databus::XChannelType &channel, const TRequest &req)
+    template < class TRequest, class TResponse >
+    std::optional< TResponse > Call(const databus::ChannelConfigHttp &channel, const TRequest &req)
     {
-        return Center().Call< TMethod, TRequest, TResponse >(channel, req);
+        return Center().Call< TRequest, TResponse >(channel, req);
     }
 
     /**
      * @brief 在指定 http 通道中，注册一个服务过程。
      */
-    template < class TMethod, class TRequest, class TResponse >
-    AuxDeleter Serve(const databus::XChannelType &channel, Server< TRequest, TResponse > server)
+    template < class TRequest, class TResponse >
+    AuxDeleter Serve(const databus::ChannelConfigHttp &channel, Server< TRequest, TResponse > server)
     {
-        return Center().Serve< TMethod, TRequest, TResponse >(channel, std::move(server));
+        return Center().Serve< TRequest, TResponse >(channel, std::move(server));
     }
 
     /**
      * @brief 关闭指定 http 通道
      */
-    template < class TMethod >
-    void Offline(const databus::XChannelType &channel)
+    void ServiceOffline(const databus::ChannelConfigHttp &channel)
     {
-        Center().Offline< TMethod >(channel);
+        Center().Offline(channel);
     }
 }   // namespace poker::databus_impl::http
