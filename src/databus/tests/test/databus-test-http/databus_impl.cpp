@@ -9,5 +9,5 @@
 
 // clang-format off
 poker_topic_impl(null,channel::MyTopicChannel )
-poker_service_impl_by_http(Post, channel::MyServiceChannel)
+poker_service_impl(http, channel::MyServiceChannel)
         // clang-format on
