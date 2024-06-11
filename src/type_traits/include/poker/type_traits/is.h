@@ -69,4 +69,31 @@ namespace poker::traits
 
     template < class... Types >
     constexpr static bool is_all_unique_v = is_all_unique< Types... >::value;
+
+    /**
+     * @brief 统计类型的数量。
+     */
+    template < class... Types >
+    struct number_of;
+
+    template < class T, class... Rest >
+    struct number_of< T, Rest... >
+    {
+        constexpr static size_t value = 1 + number_of< Rest... >::value;
+    };
+
+    template < class T >
+    struct number_of< T >
+    {
+        constexpr static size_t value = 1;
+    };
+
+    template <>
+    struct number_of<>
+    {
+        constexpr static size_t value = 0;
+    };
+
+    template < class... Types >
+    constexpr static size_t number_of_v = number_of< Types... >::value;
 }   // namespace poker::traits
