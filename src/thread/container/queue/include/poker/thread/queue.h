@@ -8,7 +8,12 @@
 #include <memory>
 #include <mutex>
 
+#include <poker/thread/lock.h>
 
+
+/**
+ * @brief 更细粒度的线程安全队列，可实现压入、弹出的同步进行（大部分）
+ */
 namespace poker::thread
 {
     template < class T >
@@ -22,7 +27,7 @@ namespace poker::thread
         {
             std::scoped_lock guard(other.h_m_, other.t_m_);
 
-            copy_list(other.p_head_.get());
+            copy_list(other.p_head_.get(), other.p_tail_);
         }
 
     public:
@@ -32,20 +37,21 @@ namespace poker::thread
             auto p_data = std::make_shared< T >(value);
 
             // 提前构造傀儡节点
-            std::unique_lock< Node > p_dummy_node(new Node());
+            std::unique_ptr< Node > p_dummy_node(new Node());
 
+            // 修改队列
+            Locking(t_m_)
             {
-                std::lock_guard guard(t_m_);
-
                 // 在原有尾部构造新数据
                 p_tail_->p_data = std::move(p_data);
-                p_tail_->next   = std::move(p_dummy_node);
+                p_tail_->next   = p_dummy_node;
 
                 // 使 tail 指向新的傀儡节点
                 p_tail_ = p_dummy_node.get();
             }
 
-            con_.notify_one();
+            // 通知队列已经非空
+            has_new_node_.notify_one();
         }
 
         template < class... Args >
@@ -90,18 +96,19 @@ namespace poker::thread
     private:
         struct Node
         {
-            std::shared_ptr< T >     p_data = nullptr;
-            std::unique_lock< Node > next   = nullptr;
+            std::shared_ptr< T >    p_data = nullptr;
+            std::unique_ptr< Node > next   = nullptr;
         };
 
-        Node *get_tail()
+        const Node *get_tail()
         {
-            std::lock_guard guard(t_m_);
-
-            return p_tail_;
+            Locking(t_m_)
+            {
+                return p_tail_;
+            }
         }
 
-        std::unique_lock< Node > pop_head()
+        std::unique_ptr< Node > pop_head()
         {
             auto old_head = std::move(p_head_);
 
@@ -110,44 +117,51 @@ namespace poker::thread
             return old_head;
         }
 
-        std::unique_lock< Node > try_pop_head()
+        std::unique_ptr< Node > try_pop_head()
         {
-            std::lock_guard guard(h_m_);
-
-            // 若为初始状态，则返回 false
-            if (p_head_.get() == get_tail())
+            Locking(h_m_)
             {
-                return nullptr;
-            }
+                // 若为初始状态，则返回 false
+                if (p_head_.get() == get_tail())
+                {
+                    return nullptr;
+                }
 
-            return pop_head();
+                return pop_head();
+            }
         }
 
-        std::unique_lock< Node > wait_pop_head()
+        std::unique_ptr< Node > wait_pop_head()
         {
             std::unique_lock guard(h_m_);
 
-            con_.wait(guard, [ this ]() { return p_head_.get() != get_tail(); });
+            has_new_node_.wait(guard, [ this ]() { return p_head_.get() != get_tail(); });
 
             return pop_head();
         }
 
     private:
-        void copy_list(const std::unique_lock< Node > &p_head)
+        void copy_list(const Node *p_head, const Node *p_tail)
         {
-            std::unique_lock< Node > cur = p_head_, another_cur = p_head;
+            const Node *another_cur = p_head;
 
-            while (cur and another_cur)
+            while (another_cur != p_tail)
             {
-                //                cur =
+                this->push(*another_cur->p_data);
+
+                another_cur = another_cur->next.get();
             }
         }
 
     private:
-        std::mutex              h_m_, t_m_;
-        std::condition_variable con_;
+        std::condition_variable has_new_node_;
 
+        // 队列头部
+        MutexLock                h_m_;
         std::unique_lock< Node > p_head_;
-        Node                    *p_tail_;
+
+        // 队列尾部，永远指向一个傀儡节点
+        MutexLock t_m_;
+        Node     *p_tail_;
     };
 }   // namespace poker::thread
