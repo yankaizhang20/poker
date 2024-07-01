@@ -11,4 +11,4 @@ export POKER_TASK_TAG="--"
 export POKER_TASK_COM_TAG="++"
 
 # c++ 文件后缀
-export POKER_SUFFIX_CXX="h;cpp;cc"
+export POKER_SUFFIX_CXX="h;hpp;cpp;cc"
