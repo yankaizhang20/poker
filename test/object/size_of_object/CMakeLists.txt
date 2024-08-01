@@ -1,0 +1,1 @@
+add_executable(size_of_object main.cpp)
